@@ -1,6 +1,5 @@
 package com.example.clockplucker.data
 
-import androidx.compose.ui.graphics.Path
 import java.util.UUID
 
 data class Script(

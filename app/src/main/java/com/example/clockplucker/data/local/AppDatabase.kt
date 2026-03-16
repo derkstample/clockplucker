@@ -7,7 +7,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @SuppressLint("RestrictedApi")
-@Database(entities = [SavedScript::class], version = 1)
+@Database(entities = [SavedScript::class], version = 3)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun scriptDao(): ScriptDao
 
@@ -21,7 +21,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "clock_plucker_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

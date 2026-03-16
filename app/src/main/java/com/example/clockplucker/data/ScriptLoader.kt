@@ -55,7 +55,7 @@ class ScriptLoader {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return Script(name = scriptName, author = scriptAuthor, characters = characters, )
+        return Script(name = scriptName, author = scriptAuthor, characters = characters)
     }
 
     private fun formatIdToName(id: String): String {

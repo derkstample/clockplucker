@@ -49,14 +49,37 @@ class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
         loadedScript = script
     }
 
-    fun saveScriptToHistory(name: String, localPath: String){
+    fun saveScriptToHistory(script: Script, localPath: String){
         viewModelScope.launch {
-            repository.insert(SavedScript(name = name, localPath = localPath))
+            repository.insert(SavedScript(name = script.name, author = script.author, localPath = localPath))
         }
     }
 
     fun loadSavedScript(context: Context, savedScript: SavedScript) {
-        val json = context.openFileInput(savedScript.localPath).bufferedReader().use { it.readText() }
-        loadedScript = ScriptLoader().parseScript(json)
+        viewModelScope.launch {
+            val json = context.openFileInput(savedScript.localPath).bufferedReader().use { it.readText() }
+            loadedScript = ScriptLoader().parseScript(json)
+        }
+    }
+
+    fun deleteScript(script: SavedScript) {
+        viewModelScope.launch {
+            repository.delete(script)
+            if (loadedScript?.name == script.name && loadedScript?.author == script.author) {
+                loadedScript = null
+            }
+        }
+    }
+
+    fun updateLastAccessed() {
+        val currentScript = loadedScript ?: return
+        viewModelScope.launch {
+            val savedScript = savedScripts.value.find { 
+                it.name == currentScript.name && it.author == currentScript.author 
+            }
+            savedScript?.let {
+                repository.update(it.copy(lastAccessed = System.currentTimeMillis()))
+            }
+        }
     }
 }

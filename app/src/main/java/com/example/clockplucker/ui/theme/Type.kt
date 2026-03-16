@@ -16,14 +16,29 @@ val TradeGothicFont = FontFamily(Font(R.font.trade_gothic_lt_std))
 
 
 // Set of Material typography styles to start with
-val Typography = Typography(
+val AppTypography = Typography(
     bodyLarge = TextStyle(
         fontFamily = TradeGothicFont,
         fontWeight = FontWeight.Normal,
-        fontSize = 18.sp,
+        fontSize = 26.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
+    bodyMedium = TextStyle(
+        fontFamily = TradeGothicFont,
+        fontWeight = FontWeight.Normal,
+        fontSize = 20.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = TradeGothicFont,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+
     titleLarge = TextStyle(
         fontFamily = SortsMillGoudyFont,
         fontWeight = FontWeight.Normal,
@@ -31,18 +46,39 @@ val Typography = Typography(
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
-    labelSmall = TextStyle(
-        fontFamily = DumbledoreFont,
-        fontWeight = FontWeight.Medium,
-        fontSize = 24.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+    titleMedium = TextStyle(
+        fontFamily = SortsMillGoudyFont,
+        fontWeight = FontWeight.Normal,
+        fontSize = 26.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
     ),
     titleSmall = TextStyle(
         fontFamily = SortsMillGoudyItalicFont,
         fontWeight = FontWeight.Normal,
         fontSize = 20.sp,
         lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+    labelLarge = TextStyle(
+        fontFamily = DumbledoreFont,
+        fontWeight = FontWeight.Medium,
+        fontSize = 26.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = DumbledoreFont,
+        fontWeight = FontWeight.Medium,
+        fontSize = 20.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = DumbledoreFont,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
+        lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     )
 )

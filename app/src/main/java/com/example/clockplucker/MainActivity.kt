@@ -4,43 +4,46 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +56,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -69,7 +71,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.clockplucker.data.Player
 import com.example.clockplucker.data.local.AppDatabase
 import com.example.clockplucker.data.local.ScriptRepository
 import com.example.clockplucker.ui.CharacterConfirmationScreen
@@ -80,7 +81,7 @@ import com.example.clockplucker.ui.PlayerListScreen
 import com.example.clockplucker.ui.PlayerReadyScreen
 import com.example.clockplucker.ui.ScriptScreen
 import com.example.clockplucker.ui.theme.ClockPluckerTheme
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,7 +99,9 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            ClockPluckerApp(viewModel)
+            ClockPluckerTheme {
+                ClockPluckerApp(viewModel)
+            }
         }
     }
 }
@@ -120,14 +123,22 @@ fun ClockPluckerApp(viewModel: MainViewModel) {
     NavHost(navController = navController, startDestination = Screen.ScriptScreen.route) {
         composable(Screen.ScriptScreen.route) {
             ScriptScreen(
-                onBack = { navController.popBackStack() },
-                onNext = { navController.navigate(Screen.OptionsScreen.route) },
+                onNext = { 
+                    viewModel.updateLastAccessed()
+                    navController.navigate(Screen.OptionsScreen.route) 
+                },
                 viewModel = viewModel
             )
         }
         composable(Screen.OptionsScreen.route) {
             OptionsScreen(
-                onBack = { navController.popBackStack() },
+                onBack = {
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(Screen.ScriptScreen.route)
+                    }
+                },
                 onNext = { navController.navigate(Screen.PlayerListScreen.route) },
                 viewModel = viewModel
             )
@@ -171,17 +182,17 @@ fun ClockPluckerApp(viewModel: MainViewModel) {
 }
 
 @Composable
-fun SectionHeader(text: String) {
+fun SectionHeader(text: String, modifier: Modifier = Modifier) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
         if (text.isNotEmpty()) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(end = 8.dp)
             )
         }
@@ -280,12 +291,166 @@ fun Modifier.verticalScrollbar(
     }
 }
 
+fun Modifier.lazyVerticalScrollbar(
+    state: LazyListState,
+    alpha: Float,
+    width: Dp = 4.dp,
+    rightPadding: Dp = 0.dp,
+    color: Color = Color.Gray
+): Modifier = drawWithContent {
+    drawContent()
+    if (alpha > 0f) {
+        val layoutInfo = state.layoutInfo
+        val visibleItemsInfo = layoutInfo.visibleItemsInfo
+        if (visibleItemsInfo.isNotEmpty() && layoutInfo.totalItemsCount > visibleItemsInfo.size) {
+            val viewPortHeight = size.height
+            val totalItemsCount = layoutInfo.totalItemsCount
+            
+            val scrollbarHeight = (visibleItemsInfo.size.toFloat() / totalItemsCount) * viewPortHeight
+            val firstVisibleItemIndex = state.firstVisibleItemIndex
+            val firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset
+            
+            val firstVisibleItemInfo = visibleItemsInfo.first()
+            val itemHeight = firstVisibleItemInfo.size
+            
+            val scrollOffset = (firstVisibleItemIndex * itemHeight + firstVisibleItemScrollOffset).toFloat()
+            val totalHeight = totalItemsCount * itemHeight
+            
+            val scrollbarTop = (scrollOffset / totalHeight) * viewPortHeight
+
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(size.width - width.toPx() - rightPadding.toPx(), scrollbarTop),
+                size = Size(width.toPx(), scrollbarHeight),
+                cornerRadius = CornerRadius(width.toPx() / 2, width.toPx() / 2),
+                alpha = alpha
+            )
+        }
+    }
+}
+
+@Composable
+fun NavigationBar(
+    progress: Int,
+    modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
+    onNext: (() -> Unit)? = null,
+    nextEnabled: Boolean = true
+) {
+    val backTranslation = remember { Animatable(0f) }
+    val nextTranslation = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    var isAnimating by remember { mutableStateOf(false) }
+
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .height(56.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (onBack != null) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable(enabled = !isAnimating) {
+                            scope.launch {
+                                isAnimating = true
+                                backTranslation.animateTo(-16f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+                                backTranslation.snapTo(0f)
+                                onBack()
+                                isAnimating = false
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "Back",
+                        modifier = Modifier.offset(x = backTranslation.value.dp)
+                    )
+                }
+
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .padding(vertical = 8.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            Row(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxHeight(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(3) { index ->
+                    val isFilled = index < progress
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(
+                                color = if (isFilled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                shape = CircleShape
+                            )
+                    )
+                }
+            }
+
+            if (onNext != null) {
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .padding(vertical = 8.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable(enabled = !isAnimating && nextEnabled) {
+                            scope.launch {
+                                isAnimating = true
+                                nextTranslation.animateTo(16f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+                                nextTranslation.snapTo(0f)
+                                onNext()
+                                isAnimating = false
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Next",
+                        modifier = Modifier.offset(x = nextTranslation.value.dp),
+                        tint = if (nextEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun ScriptScreenPreview() {
     ClockPluckerTheme {
         ScriptScreen(
-            onBack = {},
             onNext = {},
             viewModel = viewModel(factory = object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -1,6 +1,5 @@
 package com.example.clockplucker.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +44,7 @@ private val EvilColorScheme = darkColorScheme(
 fun GoodTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = GoodColorScheme,
-        typography = Typography,
+        typography = AppTypography,
         content = content
     )
 }
@@ -54,7 +53,7 @@ fun GoodTheme(content: @Composable () -> Unit) {
 fun EvilTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = EvilColorScheme,
-        typography = Typography,
+        typography = AppTypography,
         content = content
     )
 }
@@ -78,7 +77,7 @@ fun ClockPluckerTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = AppTypography,
         content = content
     )
 }
