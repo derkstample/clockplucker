@@ -1,4 +1,6 @@
-package com.example.clockplucker
+package com.example.clockplucker.data
+
+import com.example.clockplucker.R
 
 object CharacterRepository {
     private val characterData = mapOf(

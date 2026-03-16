@@ -1,4 +1,4 @@
-package com.example.clockplucker
+package com.example.clockplucker.data
 
 import java.util.UUID
 

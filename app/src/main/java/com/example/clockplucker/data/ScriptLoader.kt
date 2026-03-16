@@ -1,13 +1,7 @@
-package com.example.clockplucker
+package com.example.clockplucker.data
 
 import org.json.JSONArray
 import org.json.JSONObject
-
-data class Script(
-    val name: String = "Unknown Script",
-    val author: String = "Unknown Author",
-    val characters: List<Character> = emptyList()
-)
 
 class ScriptLoader {
     /**
@@ -61,7 +55,7 @@ class ScriptLoader {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return Script(scriptName, scriptAuthor, characters)
+        return Script(name = scriptName, author = scriptAuthor, characters = characters, )
     }
 
     private fun formatIdToName(id: String): String {
