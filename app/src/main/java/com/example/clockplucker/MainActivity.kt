@@ -33,6 +33,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -268,6 +270,42 @@ fun NInputField(
     )
 }
 
+@Composable
+fun NDropdown(
+    value: String,
+    onValueChange: (String) -> Unit,
+    max: Int
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Text(
+            text = value,
+            modifier = Modifier
+                .clickable { expanded = true }
+                .padding(horizontal = 4.dp),
+            style = MaterialTheme.typography.labelLarge.copy(
+                textDecoration = TextDecoration.Underline,
+                color = MaterialTheme.colorScheme.primary
+            )
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            (1..max).forEach { n ->
+                DropdownMenuItem(
+                    text = { Text(n.toString(), style = MaterialTheme.typography.labelLarge) },
+                    onClick = {
+                        onValueChange(n.toString())
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
 fun Modifier.verticalScrollbar(
     state: ScrollState,
     alpha: Float,
@@ -340,7 +378,6 @@ fun NavigationBar(
     val backTranslation = remember { Animatable(0f) }
     val nextTranslation = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
-    var isAnimating by remember { mutableStateOf(false) }
 
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
@@ -358,14 +395,12 @@ fun NavigationBar(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clickable(enabled = !isAnimating) {
+                        .clickable {
                             scope.launch {
-                                isAnimating = true
                                 backTranslation.animateTo(-16f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy))
                                 backTranslation.snapTo(0f)
-                                onBack()
-                                isAnimating = false
                             }
+                            onBack()
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -378,7 +413,7 @@ fun NavigationBar(
 
                 VerticalDivider(
                     modifier = Modifier
-                        .height(32.dp)
+                        .height(48.dp)
                         .padding(vertical = 8.dp),
                     thickness = 1.dp,
                     color = MaterialTheme.colorScheme.outlineVariant
@@ -410,7 +445,7 @@ fun NavigationBar(
             if (onNext != null) {
                 VerticalDivider(
                     modifier = Modifier
-                        .height(32.dp)
+                        .height(48.dp)
                         .padding(vertical = 8.dp),
                     thickness = 1.dp,
                     color = MaterialTheme.colorScheme.outlineVariant
@@ -420,14 +455,12 @@ fun NavigationBar(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clickable(enabled = !isAnimating && nextEnabled) {
+                        .clickable(enabled = nextEnabled) {
                             scope.launch {
-                                isAnimating = true
                                 nextTranslation.animateTo(16f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy))
                                 nextTranslation.snapTo(0f)
-                                onNext()
-                                isAnimating = false
                             }
+                            onNext()
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -456,6 +489,30 @@ fun ScriptScreenPreview() {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return MainViewModel(ScriptRepository(object : com.example.clockplucker.data.local.ScriptDao {
                         override fun getAllScripts() = kotlinx.coroutines.flow.flowOf(emptyList<com.example.clockplucker.data.local.SavedScript>())
+                        override suspend fun insertScript(script: com.example.clockplucker.data.local.SavedScript) {}
+                        override suspend fun deleteScript(script: com.example.clockplucker.data.local.SavedScript) {}
+                        override suspend fun updateScript(script: com.example.clockplucker.data.local.SavedScript) {}
+                    })) as T
+                }
+            })
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun OptionsScreenPreview() {
+    ClockPluckerTheme {
+        OptionsScreen(
+            onBack = {},
+            onNext = {},
+            viewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return MainViewModel(ScriptRepository(object :
+                        com.example.clockplucker.data.local.ScriptDao {
+                        override fun getAllScripts() =
+                            kotlinx.coroutines.flow.flowOf(emptyList<com.example.clockplucker.data.local.SavedScript>())
+
                         override suspend fun insertScript(script: com.example.clockplucker.data.local.SavedScript) {}
                         override suspend fun deleteScript(script: com.example.clockplucker.data.local.SavedScript) {}
                         override suspend fun updateScript(script: com.example.clockplucker.data.local.SavedScript) {}
