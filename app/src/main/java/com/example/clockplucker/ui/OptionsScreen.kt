@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -30,6 +31,8 @@ import com.example.clockplucker.MainViewModel
 import com.example.clockplucker.NDropdown
 import com.example.clockplucker.NavigationBar
 import com.example.clockplucker.SectionHeader
+import com.example.clockplucker.SelectedModes
+import com.example.clockplucker.SelectedPriorities
 import com.example.clockplucker.data.CharAlignment
 import com.example.clockplucker.data.CharType
 
@@ -40,14 +43,13 @@ fun OptionsScreen(
     viewModel: MainViewModel
 ) {
     var helpText by remember { mutableStateOf<String?>(null) }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar(
-                progress = 2,
                 onBack = onBack,
-                onNext = onNext
+                onNext = onNext,
+                progress = 2
             )
         }
     ) { innerPadding ->
@@ -56,9 +58,9 @@ fun OptionsScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 16.dp)
         ) {
-            SectionHeader("GARDENING MODE")
+            SectionHeader("SELECTION OPTIONS")
 
             val modes = listOf(
                 "No Restrictions" to "Players can select any number of preferred characters.",
@@ -76,12 +78,12 @@ fun OptionsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { viewModel.selectedMode = i }
-                            .padding(vertical = 12.dp)
+                            .clickable { viewModel.selectedMode = SelectedModes.fromInt(i) }
+                            .padding(vertical = 16.dp)
                     ) {
                         RadioButton(
-                            selected = viewModel.selectedMode == i,
-                            onClick = { viewModel.selectedMode = i }
+                            selected = viewModel.selectedMode == SelectedModes.fromInt(i),
+                            onClick = { viewModel.selectedMode = SelectedModes.fromInt(i) }
                         )
                         Spacer(modifier = Modifier.width(12.dp))
 
@@ -96,6 +98,7 @@ fun OptionsScreen(
                                 NDropdown(
                                     value = viewModel.alignmentN,
                                     onValueChange = { viewModel.alignmentN = it },
+                                    min = 1,
                                     max = maxAlignment
                                 )
                                 Text(text = " Of Each Alignment", style = MaterialTheme.typography.bodyMedium)
@@ -113,6 +116,7 @@ fun OptionsScreen(
                                 NDropdown(
                                     value = viewModel.typeN,
                                     onValueChange = { viewModel.typeN = it },
+                                    min = 1,
                                     max = maxType
                                 )
                                 Text(text = " Of Each Type", style = MaterialTheme.typography.bodyMedium)
@@ -127,21 +131,28 @@ fun OptionsScreen(
                     val explanation = when (i) {
                         2 -> pair.second.replace(
                             " n ",
-                            " ${viewModel.alignmentN.ifEmpty { "n" }} "
+                            " ${viewModel.alignmentN} "
                         )
 
                         3 -> pair.second.replace(
                             " n ",
-                            " ${viewModel.typeN.ifEmpty { "n" }} "
+                            " ${viewModel.typeN} "
                         )
 
                         else -> pair.second
                     }
                     HelpButton(onClick = { helpText = explanation })
                 }
+                if (index < 2) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                }
             }
 
-            SectionHeader("STORYTELLER PRIORITIES")
+            Spacer(modifier = Modifier.weight(1f))
+            SectionHeader(text = "STORYTELLER PRIORITIES")
 
             val priorities = listOf(
                 "No Storyteller Priorities" to "The alignment and character type of each player is not influenced by the storyteller.",
@@ -159,21 +170,28 @@ fun OptionsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { viewModel.selectedPriority = i }
-                            .padding(vertical = 12.dp)
+                            .clickable { viewModel.selectedPriority = SelectedPriorities.fromInt(i) }
+                            .padding(vertical = 16.dp)
                     ) {
                         RadioButton(
-                            selected = viewModel.selectedPriority == i,
-                            onClick = { viewModel.selectedPriority = i }
+                            selected = viewModel.selectedPriority == SelectedPriorities.fromInt(i),
+                            onClick = { viewModel.selectedPriority = SelectedPriorities.fromInt(i) }
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(text = pair.first, style = MaterialTheme.typography.bodyMedium)
                     }
                     HelpButton(onClick = { helpText = pair.second })
                 }
+                if (index < 2) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                }
             }
 
-            SectionHeader("") // Divider with no label
+            Spacer(modifier = Modifier.weight(1f))
+            SectionHeader("PLAYER PRIORITIES") // Divider with no label
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -184,7 +202,7 @@ fun OptionsScreen(
                     modifier = Modifier
                         .weight(1f)
                         .clickable { viewModel.playerPriorityToggle = !viewModel.playerPriorityToggle }
-                        .padding(vertical = 12.dp)
+                        .padding(vertical = 16.dp)
                 ) {
                     Switch(
                         checked = viewModel.playerPriorityToggle,
@@ -197,6 +215,8 @@ fun OptionsScreen(
                     helpText = "Players are allowed to prioritize certain selected characters over others in a ranked list."
                 })
             }
+
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 

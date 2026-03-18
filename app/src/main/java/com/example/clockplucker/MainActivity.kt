@@ -22,13 +22,9 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -51,18 +47,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -210,8 +198,9 @@ fun SectionHeader(text: String, modifier: Modifier = Modifier) {
 fun HelpButton(onClick: () -> Unit) {
     Box(
         modifier = Modifier
+            .padding(horizontal = 8.dp)
             .size(32.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .clip(shape = CircleShape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -226,61 +215,17 @@ fun HelpButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun NInputField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    focusRequester: FocusRequester,
-    onFocus: () -> Unit
-) {
-    var textFieldValue by remember(value) {
-        mutableStateOf(TextFieldValue(text = value, selection = TextRange(0, value.length)))
-    }
-
-    BasicTextField(
-        value = textFieldValue,
-        onValueChange = {
-            if (it.text.isEmpty() || (it.text.toIntOrNull() != null && it.text.toInt() in 1..99)) {
-                textFieldValue = it
-                onValueChange(it.text)
-            }
-        },
-        modifier = Modifier
-            .width(24.dp)
-            .focusRequester(focusRequester)
-            .onFocusChanged {
-                if (it.isFocused) {
-                    textFieldValue = textFieldValue.copy(selection = TextRange(0, textFieldValue.text.length))
-                    onFocus()
-                } else {
-                    if (textFieldValue.text.isEmpty()) {
-                        onValueChange("1")
-                    }
-                }
-            },
-        textStyle = MaterialTheme.typography.bodyLarge.copy(
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface,
-            textDecoration = TextDecoration.Underline
-        ),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done
-        ),
-        singleLine = true
-    )
-}
-
-@Composable
 fun NDropdown(
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    min: Int,
     max: Int
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Box {
         Text(
-            text = value,
+            text = value.toString(),
             modifier = Modifier
                 .clickable { expanded = true }
                 .padding(horizontal = 4.dp),
@@ -293,11 +238,11 @@ fun NDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            (1..max).forEach { n ->
+            (min..max).forEach { n ->
                 DropdownMenuItem(
                     text = { Text(n.toString(), style = MaterialTheme.typography.labelLarge) },
                     onClick = {
-                        onValueChange(n.toString())
+                        onValueChange(n)
                         expanded = false
                     }
                 )
@@ -340,29 +285,33 @@ fun Modifier.lazyVerticalScrollbar(
     if (alpha > 0f) {
         val layoutInfo = state.layoutInfo
         val visibleItemsInfo = layoutInfo.visibleItemsInfo
-        if (visibleItemsInfo.isNotEmpty() && layoutInfo.totalItemsCount > visibleItemsInfo.size) {
+        val totalItemsCount = layoutInfo.totalItemsCount
+        
+        if (visibleItemsInfo.isNotEmpty() && totalItemsCount > visibleItemsInfo.size) {
             val viewPortHeight = size.height
-            val totalItemsCount = layoutInfo.totalItemsCount
             
-            val scrollbarHeight = (visibleItemsInfo.size.toFloat() / totalItemsCount) * viewPortHeight
-            val firstVisibleItemIndex = state.firstVisibleItemIndex
-            val firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset
+            // Assume consistent item height for consistent scrollbar height
+            val firstItem = visibleItemsInfo.first()
+            val itemHeight = firstItem.size.toFloat()
+            val totalContentHeight = totalItemsCount * itemHeight
             
-            val firstVisibleItemInfo = visibleItemsInfo.first()
-            val itemHeight = firstVisibleItemInfo.size
-            
-            val scrollOffset = (firstVisibleItemIndex * itemHeight + firstVisibleItemScrollOffset).toFloat()
-            val totalHeight = totalItemsCount * itemHeight
-            
-            val scrollbarTop = (scrollOffset / totalHeight) * viewPortHeight
+            if (totalContentHeight > viewPortHeight) {
+                val scrollbarHeight = (viewPortHeight / totalContentHeight) * viewPortHeight
+                
+                val firstVisibleItemIndex = state.firstVisibleItemIndex
+                val firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset
+                
+                val scrollOffset = (firstVisibleItemIndex * itemHeight + firstVisibleItemScrollOffset)
+                val scrollbarTop = (scrollOffset / totalContentHeight) * viewPortHeight
 
-            drawRoundRect(
-                color = color,
-                topLeft = Offset(size.width - width.toPx() - rightPadding.toPx(), scrollbarTop),
-                size = Size(width.toPx(), scrollbarHeight),
-                cornerRadius = CornerRadius(width.toPx() / 2, width.toPx() / 2),
-                alpha = alpha
-            )
+                drawRoundRect(
+                    color = color,
+                    topLeft = Offset(size.width - width.toPx() - rightPadding.toPx(), scrollbarTop),
+                    size = Size(width.toPx(), scrollbarHeight),
+                    cornerRadius = CornerRadius(width.toPx() / 2, width.toPx() / 2),
+                    alpha = alpha
+                )
+            }
         }
     }
 }

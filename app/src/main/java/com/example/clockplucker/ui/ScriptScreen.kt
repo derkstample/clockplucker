@@ -1,6 +1,5 @@
 package com.example.clockplucker.ui
 
-import android.R
 import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -102,7 +101,7 @@ fun ScriptScreen(
     }
 
     val filteredScripts = remember(savedScripts, loadedScript) {
-        savedScripts.filter { it.name != loadedScript?.name || it.author != loadedScript?.author }
+        savedScripts.filter { it.name != loadedScript?.name || it.author != loadedScript.author }
     }
 
     val listState = rememberLazyListState()
