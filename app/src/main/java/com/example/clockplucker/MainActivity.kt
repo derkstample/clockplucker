@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -109,6 +110,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun ClockPluckerApp(viewModel: MainViewModel) {
     val navController = rememberNavController()
+    var currentPlayerIndex by remember { mutableIntStateOf(0) }
 
     NavHost(navController = navController, startDestination = Screen.ScriptScreen.route) {
         composable(Screen.ScriptScreen.route) {
@@ -135,15 +137,31 @@ fun ClockPluckerApp(viewModel: MainViewModel) {
         }
         composable(Screen.PlayerListScreen.route) {
             PlayerListScreen(
-                onBack = { navController.popBackStack() },
-                onNext = { navController.navigate(Screen.PlayerReadyScreen.route) },
+                onBack = {
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(Screen.OptionsScreen.route)
+                    }
+                },
+                onNext = { 
+                    currentPlayerIndex = 0
+                    navController.navigate(Screen.PlayerReadyScreen.route) 
+                },
                 viewModel = viewModel
             )
         }
         composable(Screen.PlayerReadyScreen.route) {
             PlayerReadyScreen(
                 onBack = { navController.popBackStack() },
-                onNext = { navController.navigate(Screen.CharacterSelectScreen.route) },
+                onNext = { 
+                    if (currentPlayerIndex < viewModel.players.size - 1) {
+                        currentPlayerIndex++
+                    } else {
+                        navController.navigate(Screen.CharacterSelectScreen.route)
+                    }
+                },
+                progress = currentPlayerIndex,
                 viewModel = viewModel
             )
         }
@@ -182,7 +200,7 @@ fun SectionHeader(text: String, modifier: Modifier = Modifier) {
         if (text.isNotEmpty()) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(end = 8.dp)
             )
         }
@@ -229,7 +247,7 @@ fun NDropdown(
             modifier = Modifier
                 .clickable { expanded = true }
                 .padding(horizontal = 4.dp),
-            style = MaterialTheme.typography.labelLarge.copy(
+            style = MaterialTheme.typography.labelMedium.copy(
                 textDecoration = TextDecoration.Underline,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -240,7 +258,7 @@ fun NDropdown(
         ) {
             (min..max).forEach { n ->
                 DropdownMenuItem(
-                    text = { Text(n.toString(), style = MaterialTheme.typography.labelLarge) },
+                    text = { Text(n.toString(), style = MaterialTheme.typography.labelMedium) },
                     onClick = {
                         onValueChange(n)
                         expanded = false

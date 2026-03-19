@@ -63,14 +63,14 @@ val AppTypography = Typography(
     labelLarge = TextStyle(
         fontFamily = DumbledoreFont,
         fontWeight = FontWeight.Medium,
-        fontSize = 26.sp,
+        fontSize = 36.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     ),
     labelMedium = TextStyle(
         fontFamily = DumbledoreFont,
         fontWeight = FontWeight.Medium,
-        fontSize = 20.sp,
+        fontSize = 26.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     ),
