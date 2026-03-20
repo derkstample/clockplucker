@@ -21,3 +21,9 @@ val EvilPrimary = Color(0xFFE57373) // Lighter red for dark theme
 val EvilOnPrimary = Color(0xFFB71C1C)
 val EvilPrimaryContainer = Color(0xFFD32F2F)
 val EvilOnPrimaryContainer = Color(0xFFFFEBEE)
+
+// Disabled colors (Grey)
+val DisabledPrimary = Color(0xFF9E9E9E)
+val DisabledOnPrimary = Color(0xFF212121)
+val DisabledPrimaryContainer = Color(0xFF424242)
+val DisabledOnPrimaryContainer = Color(0xFFBDBDBD)

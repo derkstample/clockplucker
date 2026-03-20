@@ -34,8 +34,8 @@ val AppTypography = Typography(
     bodySmall = TextStyle(
         fontFamily = TradeGothicFont,
         fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 24.sp,
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
         letterSpacing = 0.5.sp
     ),
 
@@ -65,20 +65,20 @@ val AppTypography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 36.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 1.sp
     ),
     labelMedium = TextStyle(
         fontFamily = DumbledoreFont,
         fontWeight = FontWeight.Medium,
         fontSize = 26.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 1.sp
     ),
     labelSmall = TextStyle(
         fontFamily = DumbledoreFont,
         fontWeight = FontWeight.Medium,
-        fontSize = 16.sp,
+        fontSize = 20.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 1.sp
     )
 )

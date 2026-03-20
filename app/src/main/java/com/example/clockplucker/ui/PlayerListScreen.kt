@@ -1,7 +1,6 @@
 package com.example.clockplucker.ui
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,7 +38,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -70,7 +69,7 @@ import com.example.clockplucker.SelectedPriorities
 import com.example.clockplucker.data.CharAlignment
 import com.example.clockplucker.data.CharType
 import com.example.clockplucker.data.Player
-import com.example.clockplucker.lazyVerticalScrollbar
+import com.example.clockplucker.drawStableVerticalScrollbar
 import com.example.clockplucker.ui.theme.EvilOnPrimaryContainer
 import com.example.clockplucker.ui.theme.EvilPrimary
 import com.example.clockplucker.ui.theme.EvilPrimaryContainer
@@ -100,17 +99,6 @@ fun PlayerListScreen(
         }
     }
 
-    val scrollbarAlpha by remember { 
-        derivedStateOf { 
-            if (listState.isScrollInProgress) 1f else 0f
-        }
-    }
-    val animatedAlpha by animateFloatAsState(
-        targetValue = scrollbarAlpha,
-        animationSpec = tween(durationMillis = 300),
-        label = "ScrollbarAlpha"
-    )
-
     // remember lambdas for performance
     val onPlayerChange = remember(viewModel) {
         { i: Int, p: Player -> viewModel.updatePlayer(i, p) }
@@ -135,12 +123,15 @@ fun PlayerListScreen(
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding(),
         bottomBar = {
             NavigationBar(
                 onBack = onBack,
                 onNext = onNext,
                 progress = 3,
+                total = 3,
                 nextEnabled = isNextEnabled
             )
         }
@@ -168,12 +159,7 @@ fun PlayerListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .lazyVerticalScrollbar(
-                        state = listState,
-                        alpha = animatedAlpha,
-                        rightPadding = 4.dp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
+                    .drawStableVerticalScrollbar(state = listState)
             ) {
                 itemsIndexed(
                     items = viewModel.players,
@@ -210,7 +196,7 @@ fun PlayerListScreen(
                     }
                 }
                 item(key = "add_player_button") {
-                    if (viewModel.players.size < 20) {
+                    if (viewModel.players.size < 15) {
                         Box(
                             modifier = Modifier
                                 .animateItem()
@@ -254,7 +240,7 @@ fun PlayerCountHeader (
     onCountChange: (Int) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val range = remember { (5..20).toList() }
+    val range = remember { (5..15).toList() }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

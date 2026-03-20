@@ -49,7 +49,8 @@ fun OptionsScreen(
             NavigationBar(
                 onBack = onBack,
                 onNext = onNext,
-                progress = 2
+                progress = 2,
+                total = 3
             )
         }
     ) { innerPadding ->

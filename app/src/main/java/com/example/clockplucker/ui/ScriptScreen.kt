@@ -6,7 +6,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -42,14 +41,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,9 +58,7 @@ import com.example.clockplucker.SectionHeader
 import com.example.clockplucker.data.Script
 import com.example.clockplucker.data.ScriptLoader
 import com.example.clockplucker.data.local.SavedScript
-import com.example.clockplucker.lazyVerticalScrollbar
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
+import com.example.clockplucker.drawStableVerticalScrollbar
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -105,21 +99,6 @@ fun ScriptScreen(
     }
 
     val listState = rememberLazyListState()
-    var scrollbarAlpha by remember { mutableFloatStateOf(0f) }
-    val animatedAlpha by animateFloatAsState(
-        targetValue = scrollbarAlpha,
-        animationSpec = tween(durationMillis = 300),
-        label = "ScrollbarAlpha"
-    )
-
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
-            .collectLatest {
-                scrollbarAlpha = 1f
-                delay(1000)
-                scrollbarAlpha = 0f
-            }
-    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -128,6 +107,7 @@ fun ScriptScreen(
                 onBack = null,
                 onNext = onNext,
                 progress = 1,
+                total = 3,
                 nextEnabled = loadedScript != null
             )
         }
@@ -160,12 +140,7 @@ fun ScriptScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .lazyVerticalScrollbar(
-                        state = listState,
-                        alpha = animatedAlpha,
-                        rightPadding = 4.dp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
+                    .drawStableVerticalScrollbar(state = listState)
             ) {
                 itemsIndexed(filteredScripts, key = { _, script -> script.id }) { index, savedScript ->
                     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -305,14 +280,13 @@ fun ScriptImportButton(launcher: ActivityResultLauncher<String>){
             .padding(start = 8.dp)
             .size(40.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .clickable { launcher.launch("application/json") },
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Default.Add,
-            contentDescription = "Add Script",
-            tint = MaterialTheme.colorScheme.surface
+            contentDescription = "Add Script"
         )
     }
 }

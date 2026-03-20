@@ -7,7 +7,7 @@ import androidx.activity.viewModels
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.ScrollState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,14 +36,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,7 +56,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -72,6 +73,7 @@ import com.example.clockplucker.ui.PlayerListScreen
 import com.example.clockplucker.ui.PlayerReadyScreen
 import com.example.clockplucker.ui.ScriptScreen
 import com.example.clockplucker.ui.theme.ClockPluckerTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -155,11 +157,7 @@ fun ClockPluckerApp(viewModel: MainViewModel) {
             PlayerReadyScreen(
                 onBack = { navController.popBackStack() },
                 onNext = { 
-                    if (currentPlayerIndex < viewModel.players.size - 1) {
-                        currentPlayerIndex++
-                    } else {
-                        navController.navigate(Screen.CharacterSelectScreen.route)
-                    }
+                    navController.navigate(Screen.CharacterSelectScreen.route)
                 },
                 progress = currentPlayerIndex,
                 viewModel = viewModel
@@ -168,14 +166,28 @@ fun ClockPluckerApp(viewModel: MainViewModel) {
         composable(Screen.CharacterSelectScreen.route) {
             CharacterSelectScreen(
                 onBack = { navController.popBackStack() },
-                onNext = { navController.navigate(Screen.CharacterConfirmationScreen.route) },
-                viewModel = viewModel
+                onNext = { selected ->
+                    val currentPlayer = viewModel.players[currentPlayerIndex]
+                    viewModel.updatePlayer(currentPlayerIndex, currentPlayer.copy(selectedChars = selected))
+                    navController.navigate(Screen.CharacterConfirmationScreen.route)
+                },
+                viewModel = viewModel,
+                playerIndex = currentPlayerIndex
             )
         }
         composable(Screen.CharacterConfirmationScreen.route) {
             CharacterConfirmationScreen(
                 onBack = { navController.popBackStack() },
-                onNext = { navController.navigate(Screen.GrimRevealScreen.route) },
+                onNext = {
+                    if (currentPlayerIndex == viewModel.players.size - 1) {
+                        navController.navigate(Screen.GrimRevealScreen.route)
+                    } else {
+                        currentPlayerIndex++
+                        navController.navigate(Screen.PlayerReadyScreen.route) {
+                            popUpTo(Screen.PlayerReadyScreen.route) { inclusive = true }
+                        }
+                    }
+                },
                 viewModel = viewModel
             )
         }
@@ -269,74 +281,69 @@ fun NDropdown(
     }
 }
 
-fun Modifier.verticalScrollbar(
-    state: ScrollState,
-    alpha: Float,
-    width: Dp = 4.dp,
-    color: Color = Color.Gray
-): Modifier = drawWithContent {
-    drawContent()
-    if (alpha > 0f && state.maxValue > 0) {
-        val viewPortHeight = size.height
-        val contentHeight = state.maxValue + viewPortHeight
-        val scrollbarHeight = (viewPortHeight / contentHeight) * viewPortHeight
-        val scrollbarTop = (state.value.toFloat() / contentHeight) * viewPortHeight
-
-        drawRoundRect(
-            color = color,
-            topLeft = Offset(size.width - width.toPx(), scrollbarTop),
-            size = Size(width.toPx(), scrollbarHeight),
-            cornerRadius = CornerRadius(width.toPx() / 2, width.toPx() / 2),
-            alpha = alpha
-        )
-    }
-}
-
-fun Modifier.lazyVerticalScrollbar(
+@Composable
+fun Modifier.drawStableVerticalScrollbar(
     state: LazyListState,
-    alpha: Float,
-    width: Dp = 4.dp,
-    rightPadding: Dp = 0.dp,
-    color: Color = Color.Gray
-): Modifier = drawWithContent {
-    drawContent()
-    if (alpha > 0f) {
-        val layoutInfo = state.layoutInfo
-        val visibleItemsInfo = layoutInfo.visibleItemsInfo
-        val totalItemsCount = layoutInfo.totalItemsCount
-        
-        if (visibleItemsInfo.isNotEmpty() && totalItemsCount > visibleItemsInfo.size) {
-            val viewPortHeight = size.height
-            
-            // Assume consistent item height for consistent scrollbar height
-            val firstItem = visibleItemsInfo.first()
-            val itemHeight = firstItem.size.toFloat()
-            val totalContentHeight = totalItemsCount * itemHeight
-            
-            if (totalContentHeight > viewPortHeight) {
-                val scrollbarHeight = (viewPortHeight / totalContentHeight) * viewPortHeight
-                
-                val firstVisibleItemIndex = state.firstVisibleItemIndex
-                val firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset
-                
-                val scrollOffset = (firstVisibleItemIndex * itemHeight + firstVisibleItemScrollOffset)
-                val scrollbarTop = (scrollOffset / totalContentHeight) * viewPortHeight
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+): Modifier {
+    // 1. Height Tracking Logic
+    val itemHeights = remember { mutableStateMapOf<Int, Int>() }
 
-                drawRoundRect(
-                    color = color,
-                    topLeft = Offset(size.width - width.toPx() - rightPadding.toPx(), scrollbarTop),
-                    size = Size(width.toPx(), scrollbarHeight),
-                    cornerRadius = CornerRadius(width.toPx() / 2, width.toPx() / 2),
-                    alpha = alpha
-                )
+    LaunchedEffect(state) {
+        snapshotFlow { state.layoutInfo.visibleItemsInfo }
+            .collect { visibleItems ->
+                visibleItems.forEach { itemHeights[it.index] = it.size }
             }
-        }
+    }
+
+    // 2. Fading Logic
+    val alpha = remember { Animatable(0f) }
+
+    LaunchedEffect(state.firstVisibleItemIndex, state.firstVisibleItemScrollOffset) {
+        // Show the scrollbar immediately when a scroll change is detected
+        alpha.snapTo(1f)
+        // Wait for 1 second of inactivity
+        delay(800L)
+        // Fade out over 500ms
+        alpha.animateTo(0f, animationSpec = tween(500))
+    }
+
+    return this.drawWithContent {
+        drawContent()
+
+        val totalItemsCount = state.layoutInfo.totalItemsCount
+        if (totalItemsCount <= 1 || alpha.value == 0f) return@drawWithContent
+
+        // Calculate geometry
+        val averageHeight = if (itemHeights.isEmpty()) 0f else itemHeights.values.average().toFloat()
+        val estimatedTotalHeight = (0 until totalItemsCount).sumOf {
+            itemHeights[it] ?: averageHeight.toInt()
+        }.toFloat()
+
+        if (estimatedTotalHeight <= size.height) return@drawWithContent
+
+        val scrolledDistance = (0 until state.firstVisibleItemIndex).sumOf {
+            itemHeights[it] ?: averageHeight.toInt()
+        } + state.firstVisibleItemScrollOffset
+
+        val viewportHeight = size.height
+        val scrollbarHeight = (viewportHeight / estimatedTotalHeight) * viewportHeight
+        val scrollbarOffsetY = (scrolledDistance / estimatedTotalHeight) * viewportHeight
+
+        // 3. Draw with the animated alpha
+        drawRoundRect(
+            color = color.copy(alpha = color.alpha * alpha.value),
+            topLeft = Offset(size.width - 8.dp.toPx(), scrollbarOffsetY),
+            size = Size(4.dp.toPx(), scrollbarHeight),
+            cornerRadius = CornerRadius(2.dp.toPx())
+        )
     }
 }
 
 @Composable
 fun NavigationBar(
     progress: Int,
+    total: Int,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     onNext: (() -> Unit)? = null,
@@ -347,7 +354,7 @@ fun NavigationBar(
     val scope = rememberCoroutineScope()
 
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = MaterialTheme.colorScheme.primaryContainer,
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -364,7 +371,10 @@ fun NavigationBar(
                         .fillMaxHeight()
                         .clickable {
                             scope.launch {
-                                backTranslation.animateTo(-16f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+                                backTranslation.animateTo(
+                                    -16f,
+                                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+                                )
                                 backTranslation.snapTo(0f)
                             }
                             onBack()
@@ -377,14 +387,6 @@ fun NavigationBar(
                         modifier = Modifier.offset(x = backTranslation.value.dp)
                     )
                 }
-
-                VerticalDivider(
-                    modifier = Modifier
-                        .height(48.dp)
-                        .padding(vertical = 8.dp),
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
             } else {
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -396,13 +398,15 @@ fun NavigationBar(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(3) { index ->
+                repeat(total) { index ->
                     val isFilled = index < progress
                     Box(
                         modifier = Modifier
                             .size(12.dp)
                             .background(
-                                color = if (isFilled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                color = if (isFilled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
+                                    alpha = 0.5f
+                                ),
                                 shape = CircleShape
                             )
                     )
@@ -410,21 +414,16 @@ fun NavigationBar(
             }
 
             if (onNext != null) {
-                VerticalDivider(
-                    modifier = Modifier
-                        .height(48.dp)
-                        .padding(vertical = 8.dp),
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
                         .clickable(enabled = nextEnabled) {
                             scope.launch {
-                                nextTranslation.animateTo(16f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+                                nextTranslation.animateTo(
+                                    16f,
+                                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+                                )
                                 nextTranslation.snapTo(0f)
                             }
                             onNext()

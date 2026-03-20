@@ -40,6 +40,15 @@ private val EvilColorScheme = darkColorScheme(
     onSurfaceVariant = EvilPrimary
 )
 
+private val DisabledColorScheme = darkColorScheme(
+    primary = DisabledPrimary,
+    onPrimary = DisabledOnPrimary,
+    primaryContainer = DisabledPrimaryContainer,
+    onPrimaryContainer = DisabledOnPrimaryContainer,
+    surfaceVariant = DisabledPrimaryContainer.copy(alpha = 0.2f),
+    onSurfaceVariant = DisabledPrimary
+)
+
 @Composable
 fun GoodTheme(content: @Composable () -> Unit) {
     MaterialTheme(
@@ -53,6 +62,15 @@ fun GoodTheme(content: @Composable () -> Unit) {
 fun EvilTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = EvilColorScheme,
+        typography = AppTypography,
+        content = content
+    )
+}
+
+@Composable
+fun DisabledTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = DisabledColorScheme,
         typography = AppTypography,
         content = content
     )

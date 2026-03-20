@@ -1,8 +1,10 @@
 package com.example.clockplucker.data
 
 import androidx.annotation.DrawableRes
+import java.util.UUID
 
 data class Character(
+    val id: String = UUID.randomUUID().toString(),
     val name: String,
     val type: CharType,
     val alignment: CharAlignment = if (type == CharType.TOWNSFOLK || type == CharType.OUTSIDER) CharAlignment.GOOD else CharAlignment.EVIL,
