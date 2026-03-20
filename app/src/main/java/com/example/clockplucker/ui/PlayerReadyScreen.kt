@@ -113,7 +113,12 @@ fun PlayerReadyScreen(
                     modifier = Modifier.padding(vertical = 56.dp)
                 )
 
-                OutlinedButton(onClick = onNext) {
+                OutlinedButton(onClick = {
+                    currentPlayer?.let {
+                        viewModel.updatePlayer(progress, it.copy(selectedChars = emptyList()))
+                    }
+                    onNext()
+                }) {
                     Text(
                         text = "Ready",
                         style = MaterialTheme.typography.labelLarge,

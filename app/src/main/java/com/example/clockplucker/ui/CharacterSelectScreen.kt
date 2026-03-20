@@ -353,6 +353,7 @@ fun ScriptHeader(
 fun CharacterRow(
     character: Character,
     isSelected: Boolean,
+    modifier: Modifier = Modifier,
     isDisabled: Boolean = false,
     onClick: () -> Unit
 ) {
@@ -382,7 +383,7 @@ fun CharacterRow(
 
     val abilityText = remember(character.ability) {
         buildAnnotatedString {
-            val regex = Regex("\\[.*?\\]")
+            val regex = Regex("\\[.*?]")
             var lastIndex = 0
             regex.findAll(character.ability).forEach { matchResult ->
                 append(character.ability.substring(lastIndex, matchResult.range.first))
@@ -396,7 +397,7 @@ fun CharacterRow(
     }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 2.dp)
             .border(1.dp, animatedOutlineColor, RoundedCornerShape(4.dp))

@@ -188,7 +188,8 @@ fun ClockPluckerApp(viewModel: MainViewModel) {
                         }
                     }
                 },
-                viewModel = viewModel
+                viewModel = viewModel,
+                playerIndex = currentPlayerIndex
             )
         }
         composable(Screen.GrimRevealScreen.route) {

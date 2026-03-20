@@ -91,6 +91,7 @@ fun PlayerListScreen(
 
     val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
         viewModel.movePlayer(from.index, to.index)
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
     val isNextEnabled by remember {
