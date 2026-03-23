@@ -42,7 +42,7 @@ class ScriptLoader {
 
                         val ability = item.optString("ability", "")
                         
-                        characters.add(Character(name = name, type = type, icon = 0, ability = ability)) //TODO: fix icons
+                        characters.add(Character(id = id,name = name, type = type, icon = 0, ability = ability))
                     }
                     is String -> {
                         val characterInfo = CharacterRepository.getCharacterInfo(item)
