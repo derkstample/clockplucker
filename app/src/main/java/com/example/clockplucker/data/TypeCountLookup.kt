@@ -1,15 +1,5 @@
 package com.example.clockplucker.data
 
-enum class ModifierMode {
-    ADDITIVE,
-    OVERRIDE
-}
-
-data class SetupModifier(
-    val mode: ModifierMode = ModifierMode.ADDITIVE,
-    val counts: Count = Count()
-)
-
 data class Count(
     var townsfolk: Int = 0,
     var outsider: Int = 0,

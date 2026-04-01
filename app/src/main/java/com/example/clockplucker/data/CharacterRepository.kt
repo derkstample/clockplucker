@@ -45,7 +45,7 @@ object CharacterRepository {
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_atheist,
             ability = "The Storyteller can break the game rules, and if executed, good wins, even if you are dead. [No evil characters]",
-            modifierOptions = listOf(SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 0)))
+            overrideModifiers = listOf(CharType.MINION, CharType.DEMON)
         ),
         "balloonist" to Character(
             id = "balloonist",
@@ -53,7 +53,7 @@ object CharacterRepository {
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_balloonist,
             ability = "Each night, you learn a player of a different character type than last night. [+0 or +1 Outsider]",
-            modifierOptions = listOf(SetupModifier(), SetupModifier(counts = Count(townsfolk = -1, outsider = 1)))
+            additiveModifiers = listOf(Count(townsfolk = -1, outsider = 1))
         ),
         "banshee" to Character(
             id = "banshee",
@@ -520,8 +520,7 @@ object CharacterRepository {
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_drunk,
             ability = "You do not know you are the Drunk. You think you are a Townsfolk character, but you are not.",
-            modifierOptions = listOf(SetupModifier(counts = Count(townsfolk = -1))),
-            isSelectable = false
+            thinksTheyAre = listOf(CharType.TOWNSFOLK)
         ),
         "golem" to Character(
             id = "golem",
@@ -558,7 +557,7 @@ object CharacterRepository {
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_heretic,
             ability = "You have all Outsider abilities. [-0 or -1 Outsider]",
-            modifierOptions = listOf(SetupModifier(), SetupModifier(counts = Count(townsfolk = 1, outsider = -1)))
+            additiveModifiers = listOf(Count(), Count(townsfolk = 1, outsider = -1))
         ),
         "klutz" to Character(
             id = "klutz",
@@ -573,7 +572,7 @@ object CharacterRepository {
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_lunatic,
             ability = "You think you are a Demon, but you are not. The Demon knows who you are & who you choose at night.",
-            isSelectable = false
+            thinksTheyAre = listOf(CharType.DEMON)
         ),
         "moonchild" to Character(
             id = "moonchild",
@@ -674,7 +673,7 @@ object CharacterRepository {
             icon = R.drawable.icon_baron,
             hardJinxedWith = listOf("heretic"),
             ability = "There are extra Outsiders in play. [+2 Outsiders]",
-            modifierOptions = listOf(SetupModifier(counts = Count(townsfolk = -2, outsider = 2)))
+            additiveModifiers = listOf(Count(townsfolk = -2, outsider = 2))
         ),
         "boffin" to Character(
             id = "boffin",
@@ -732,7 +731,7 @@ object CharacterRepository {
             icon = R.drawable.icon_godfather,
             hardJinxedWith = listOf("heretic"),
             ability = "You start knowing which Outsiders are in play. If 1 died today, choose a player tonight: they die. [-1 or +1 Outsider]",
-            modifierOptions = listOf(SetupModifier(counts = Count(townsfolk = -1, outsider = 1)), SetupModifier(counts = Count(townsfolk = 1, outsider = -1)))
+            additiveModifiers = listOf(Count(townsfolk = -1, outsider = 1), Count(townsfolk = 1, outsider = -1))
         ),
         "harpy" to Character(
             id = "harpy",
@@ -747,8 +746,7 @@ object CharacterRepository {
             type = CharType.MINION,
             icon = R.drawable.icon_marionette,
             ability = "You think you are a good character, but you are not. The Demon knows who you are. [You neighbor the Demon]",
-            modifierOptions = listOf(SetupModifier(counts = Count(townsfolk = -1))),
-            isSelectable = false
+            thinksTheyAre = listOf(CharType.TOWNSFOLK, CharType.OUTSIDER)
         ),
         "mastermind" to Character(
             id = "mastermind",
@@ -814,7 +812,7 @@ object CharacterRepository {
             type = CharType.MINION,
             icon = R.drawable.icon_summoner,
             ability = "You get 3 bluffs. On the 3rd night, choose a player: they become an evil Demon of your choice. [No Demon]",
-            modifierOptions = listOf(SetupModifier(counts = Count(townsfolk = 1, demon = -1)))
+            additiveModifiers = listOf(Count(townsfolk = 1, demon = -1))
         ),
         "vizier" to Character(
             id = "vizier",
@@ -858,12 +856,12 @@ object CharacterRepository {
             type = CharType.MINION,
             icon = R.drawable.icon_xaan,
             ability = "On night X, all Townsfolk are poisoned until dusk. [X Outsiders]",
-            modifierOptions = listOf(
-                SetupModifier(),
-                SetupModifier(counts = Count(townsfolk = -1, outsider = 1)),
-                SetupModifier(counts = Count(townsfolk = -2, outsider = 2)),
-                SetupModifier(counts = Count(townsfolk = -3, outsider = 3)),
-                SetupModifier(counts = Count(townsfolk = -4, outsider = 4))
+            additiveModifiers = listOf(
+                Count(),
+                Count(townsfolk = -1, outsider = 1),
+                Count(townsfolk = -2, outsider = 2),
+                Count(townsfolk = -3, outsider = 3),
+                Count(townsfolk = -4, outsider = 4)
             )
         ),
         // DEMONS //
@@ -880,7 +878,7 @@ object CharacterRepository {
             type = CharType.DEMON,
             icon = R.drawable.icon_fanggu,
             ability = "Each night*, choose a player: they die. The 1st Outsider this kills becomes an evil Fang Gu & you die instead. [+1 Outsider]",
-            modifierOptions = listOf(SetupModifier(counts = Count(townsfolk = -1, outsider = 1)))
+            additiveModifiers = listOf(Count(townsfolk = -1, outsider = 1))
         ),
         "imp" to Character(
             id = "imp",
@@ -895,7 +893,7 @@ object CharacterRepository {
             type = CharType.DEMON,
             icon = R.drawable.icon_kazali,
             ability = "Each night*, choose a player: they die. [You choose which players are which Minions. -? to +? Outsiders]",
-            modifierOptions = listOf(SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0)))
+            overrideModifiers = listOf(CharType.MINION)
         ),
         "legion" to Character(
             id = "legion",
@@ -904,16 +902,7 @@ object CharacterRepository {
             icon = R.drawable.icon_legion,
             maxInstances = 10,
             ability = "Each night*, a player might die. Executions fail if only evil voted. You register as a Minion too. [Most players are Legion]",
-            modifierOptions = listOf(
-                SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 3)),
-                SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 4)),
-                SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 5)),
-                SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 6)),
-                SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 7)),
-                SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 8)),
-                SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 9)),
-                SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0, demon = 10))
-            ) // todo: this asshole
+            overrideModifiers = listOf(CharType.MINION) // todo: this asshole
         ),
         "leviathan" to Character(
             id = "leviathan",
@@ -928,7 +917,7 @@ object CharacterRepository {
             type = CharType.DEMON,
             icon = R.drawable.icon_lilmonsta,
             ability = "Each night, Minions choose who babysits Lil' Monsta & \"is the Demon\". Each night*, a player might die. [+1 Minion]",
-            modifierOptions = listOf(SetupModifier(counts = Count(minion = 1, demon = -1)))
+            additiveModifiers = listOf(Count(minion = 1, demon = -1))
         ),
         "lleech" to Character(
             id = "lleech",
@@ -944,7 +933,7 @@ object CharacterRepository {
             type = CharType.DEMON,
             icon = R.drawable.icon_lordoftyphon,
             ability = "Each night*, choose a player: they die. [Evil characters are in a line. You are in the middle. +1 Minion. -? to +? Outsiders]",
-            modifierOptions = listOf(SetupModifier(mode = ModifierMode.OVERRIDE, counts = Count(minion = 0)))
+            overrideModifiers = listOf(CharType.MINION)
         ),
         "nodashii" to Character(
             id = "nodashii",
@@ -994,7 +983,7 @@ object CharacterRepository {
             type = CharType.DEMON,
             icon = R.drawable.icon_vigormortis,
             ability = "Each night*, choose a player: they die. Minions you kill keep their ability & poison 1 Townsfolk neighbor. [-1 Outsider]",
-            modifierOptions = listOf(SetupModifier(counts = Count(townsfolk = 1, outsider = -1)))
+            additiveModifiers = listOf(Count(townsfolk = 1, outsider = -1))
         ),
         "vortox" to Character(
             id = "vortox",

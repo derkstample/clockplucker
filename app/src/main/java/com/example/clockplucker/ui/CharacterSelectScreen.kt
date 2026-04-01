@@ -255,7 +255,7 @@ fun CharacterSelectScreen(
                         key = { it.id }
                     ) { character ->
                         val isSelected = selectedCharacters.contains(character)
-                        val isDisabled = !character.isSelectable
+                        val isDisabled = !character.thinksTheyAre.isEmpty()
                         val canSelect = remember(selectedCharacters.size, viewModel.selectedMode, viewModel.alignmentN, viewModel.typeN) {
                             derivedStateOf {
                                 if (isSelected) true

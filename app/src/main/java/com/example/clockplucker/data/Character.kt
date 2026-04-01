@@ -12,8 +12,9 @@ data class Character(
     val maxInstances: Int = 1, // for the Village Idiot
     val dependsOn: String? = null, // for the Huntsman and Choirboy
     val hardJinxedWith: List<String> = emptyList(), // for the Heretic
-    val modifierOptions: List<SetupModifier> = listOf(SetupModifier()), // for the Balloonist, Baron, etc.
-    val isSelectable: Boolean = true // for the Drunk, Lunatic, and Marionette
+    val additiveModifiers: List<Count> = listOf(Count()), // for the Balloonist, Baron, etc.
+    val overrideModifiers: List<CharType> = emptyList(), // for the Atheist, Legion, etc.
+    val thinksTheyAre: List<CharType> = emptyList() // for the Drunk, Lunatic, and Marionette
 )
 
 enum class CharType {
