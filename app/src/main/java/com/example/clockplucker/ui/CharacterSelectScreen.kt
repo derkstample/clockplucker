@@ -30,11 +30,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,12 +80,21 @@ fun CharacterSelectScreen(
     val charactersByType = remember(script) { script.characters.groupBy { it.type } }
     val hasNightPenalty = remember(script) { script.characters.any { it.ability.contains("*") } }
     val listState = rememberLazyListState()
+
+    // Use remember(playerIndex) so it re-initializes from the ViewModel when returning from the backstack.
+    // Immediate updates to the ViewModel (via LaunchedEffect) ensure rotation is handled by the ViewModel surviving.
     val selectedCharacters = remember(playerIndex) {
         mutableStateListOf<Character>().apply {
             addAll(player.selectedChars)
         }
     }
-    var showDisabledPopup by remember { mutableStateOf(false) }
+
+    // Push changes to the ViewModel immediately
+    LaunchedEffect(selectedCharacters.toList()) {
+        viewModel.updatePlayer(playerIndex, player.copy(selectedChars = selectedCharacters.toList()))
+    }
+
+    var showDisabledPopup by rememberSaveable { mutableStateOf(false) }
 
     val labelSmallStyle = MaterialTheme.typography.labelSmall.toSpanStyle()
     val annotatedRestrictionsText = remember(selectedCharacters.size, viewModel.selectedMode, viewModel.alignmentN, viewModel.typeN, script) {

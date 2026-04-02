@@ -21,7 +21,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +38,7 @@ fun PlayerReadyScreen(
     val currentPlayer = viewModel.players.getOrNull(progress)
     val playerName = currentPlayer?.name ?: "Unknown Player"
 
-    var showExitDialog by remember { mutableStateOf(false) }
+    var showExitDialog by rememberSaveable { mutableStateOf(false) }
 
     // Handle back gesture
     BackHandler {
@@ -110,7 +110,8 @@ fun PlayerReadyScreen(
                 PlayerProgressCircle(
                     numPlayers = viewModel.players.size,
                     progress = progress,
-                    modifier = Modifier.padding(vertical = 56.dp)
+                    modifier = Modifier
+                        .padding(vertical = 24.dp)
                 )
 
                 OutlinedButton(onClick = {

@@ -83,7 +83,7 @@ class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
     var autoSentinel by mutableStateOf(false)
     var sentinelMod by mutableIntStateOf(0)
 
-    var surpriseChance by mutableFloatStateOf(0f)
+    var surpriseChance by mutableFloatStateOf(0.5f)
 
     fun updatePlayer(index: Int, player: Player) {
         if (index in players.indices) {

@@ -176,6 +176,7 @@ fun PlayerListScreen(
                             isMenuExpanded = activeMenuIndex == index,
                             onOpenMenu = onOpenMenu,
                             onDismissMenu = onDismissMenu,
+                            isLast = index == viewModel.players.size - 1,
                             handleModifier = Modifier.longPressDraggableHandle(
                                 onDragStarted = {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -293,6 +294,7 @@ fun PlayerInputRow(
     isMenuExpanded: Boolean,
     onOpenMenu: (Int) -> Unit,
     onDismissMenu: () -> Unit,
+    isLast: Boolean,
     modifier: Modifier = Modifier,
     handleModifier: Modifier = Modifier
 ) {
@@ -421,7 +423,7 @@ fun PlayerInputRow(
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Words,
-                            imeAction = ImeAction.Next
+                            imeAction = if (isLast) ImeAction.Done else ImeAction.Next
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = { defaultKeyboardAction(ImeAction.Done) },

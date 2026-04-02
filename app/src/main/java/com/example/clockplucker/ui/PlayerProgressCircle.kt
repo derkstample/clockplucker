@@ -6,6 +6,7 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
@@ -13,7 +14,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,8 +26,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.unit.min
 import kotlinx.coroutines.delay
-import kotlin.concurrent.timer
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -41,32 +47,58 @@ fun PlayerProgressCircle(
     if (numPlayers <= 0) return
 
     val angleStep = 360f / numPlayers
-    
-    // We want the current 'progress' circle to be at the top (-90 degrees).
-    // The rotation of the container should be -90 - (progress * angleStep).
     val targetRotation = -90f - (progress * angleStep)
-    
-    // To animate "to the next circle", we start the rotation from the previous progress position.
-    // If progress is 0, we start at the target rotation (no rotation animation).
-    val initialRotation = if (progress > 0) {
-        -90f - ((progress - 1) * angleStep)
-    } else {
-        targetRotation
+
+    // Track the progress we have already finished animating to.
+    // Using rememberSaveable ensures this survives device rotation.
+    var lastAnimatedProgress by rememberSaveable { mutableIntStateOf(-1) }
+
+    // Initialize the Animatable with the correct final state if this is a recreation (rotation)
+    // or with the starting state if it's a new progress.
+    val rotation = remember {
+        val initialProgress = if (lastAnimatedProgress != -1 && lastAnimatedProgress != progress) {
+            // Start from the previous player's angle to animate the transition
+            lastAnimatedProgress
+        } else if (lastAnimatedProgress == -1 && progress > 0) {
+            // Fallback for when state is lost due to navigation
+            progress - 1
+        } else {
+            // Start directly at current progress (prevents re-playing animation on rotation)
+            progress
+        }
+        Animatable(-90f - (initialProgress * angleStep))
     }
 
-    val rotation = remember { Animatable(initialRotation) }
-    // By keying the Animatable with progress, we ensure it resets to 0f immediately
-    // when progress changes, avoiding any flicker from its previous state.
-    val fillProgress = remember(progress) { Animatable(0f) }
+    // Similarly for fillProgress: 1f if we were already at this progress, 0f if we need to animate it.
+    val fillProgress = remember {
+        Animatable(if (lastAnimatedProgress == progress) 1f else 0f)
+    }
 
     LaunchedEffect(progress) {
-        if (progress > 0) {
+        // If the values already match, this is a recomposition/rotation that was already initialized.
+        if (lastAnimatedProgress == progress) return@LaunchedEffect
+
+        // We animate the rotation if we are transitioning between players,
+        // or if we just arrived on the screen at a non-zero progress.
+        val shouldAnimateRotation = (lastAnimatedProgress != -1) || (progress > 0)
+
+        if (shouldAnimateRotation) {
+            // Ensure we are at the correct starting position before animating
+            val startProgress = if (lastAnimatedProgress != -1) lastAnimatedProgress else progress - 1
+            rotation.snapTo(-90f - (startProgress * angleStep))
+            fillProgress.snapTo(0f)
+
+            // Small delay to let the screen transition settle
+            delay(timeMillis = 300)
+
             rotation.animateTo(
                 targetValue = targetRotation,
                 animationSpec = tween(durationMillis = 600, easing = LinearOutSlowInEasing)
             )
         } else {
+            // First entry on player 0
             rotation.snapTo(targetRotation)
+            fillProgress.snapTo(0f)
             delay(timeMillis = 800)
         }
 
@@ -74,47 +106,72 @@ fun PlayerProgressCircle(
             targetValue = 1f,
             animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
         )
+
+        lastAnimatedProgress = progress
     }
 
-    val circleSize = (radius / numPlayers.toFloat()) * 2.0f
-
-    Box(
-        modifier = modifier
-            .size(radius * 2 + circleSize)
-            .graphicsLayer { rotationZ = rotation.value },
+    BoxWithConstraints(
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        for (i in 0 until numPlayers) {
-            val angleDeg = i * angleStep
-            val angleRad = Math.toRadians(angleDeg.toDouble())
-            val x = (radius.value * cos(angleRad)).dp
-            val y = (radius.value * sin(angleRad)).dp
+        val circleSizeFactor = 2.0f / numPlayers.toFloat()
+        val totalSizeFactor = 2.0f + circleSizeFactor
+        
+        // The diameter we'd like to have based on the preferred radius
+        val preferredDiameter = radius * totalSizeFactor
+        
+        // The actual diameter available in the current constraints
+        val availableDiameter = if (maxHeight.isSpecified && maxHeight < 2000.dp) {
+            min(maxWidth, maxHeight)
+        } else {
+            maxWidth
+        }
+        
+        // We use the smaller of what we want and what we have
+        val totalSize = min(availableDiameter, preferredDiameter)
+        
+        // Recalculate radius and circleSize based on the actual totalSize
+        val actualRadius = totalSize / totalSizeFactor
+        val circleSize = actualRadius * circleSizeFactor
 
-            Box(
-                modifier = Modifier
-                    .offset(x, y)
-                    .size(circleSize)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                val isFilled = i < progress
-                val isCurrentlyFilling = i == progress
-                
-                if (isFilled || isCurrentlyFilling) {
-                    val scale = if (isCurrentlyFilling) fillProgress.value else 1f
-                    val alpha = if (isCurrentlyFilling) fillProgress.value else 1f
+        Box(
+            modifier = Modifier
+                .size(totalSize)
+                .graphicsLayer { rotationZ = rotation.value },
+            contentAlignment = Alignment.Center
+        ) {
+            for (i in 0 until numPlayers) {
+                val angleDeg = i * angleStep
+                val angleRad = Math.toRadians(angleDeg.toDouble())
+                val x = (actualRadius.value * cos(angleRad)).dp
+                val y = (actualRadius.value * sin(angleRad)).dp
+
+                Box(
+                    modifier = Modifier
+                        .offset(x, y)
+                        .size(circleSize)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val isFilled = i < progress
+                    val isCurrentlyFilling = i == progress
                     
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .graphicsLayer {
-                                scaleX = scale
-                                scaleY = scale
-                                this.alpha = alpha
-                            }
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                    )
+                    if (isFilled || isCurrentlyFilling) {
+                        val scale = if (isCurrentlyFilling) fillProgress.value else 1f
+                        val alpha = if (isCurrentlyFilling) fillProgress.value else 1f
+                        
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                    this.alpha = alpha
+                                }
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                        )
+                    }
                 }
             }
         }

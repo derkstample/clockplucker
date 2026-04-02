@@ -26,8 +26,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,7 +68,27 @@ fun CharacterConfirmationScreen(
 ) {
     val script = viewModel.loadedScript ?: return
     val player = viewModel.players[playerIndex]
-    val selectedCharacters = remember { mutableStateListOf<Character>().apply { addAll(player.selectedChars) } }
+
+    // Saver to handle saving/restoring the list of selected characters
+    val characterListSaver = listSaver<MutableList<Character>, String>(
+        save = { list -> list.map { it.id } },
+        restore = { ids -> 
+            mutableStateListOf<Character>().apply {
+                addAll(ids.mapNotNull { id -> script.characters.find { it.id == id } })
+            }
+        }
+    )
+
+    val selectedCharacters = rememberSaveable(playerIndex, saver = characterListSaver) {
+        mutableStateListOf<Character>().apply {
+            addAll(player.selectedChars)
+        }
+    }
+
+    // Effect to update the ViewModel whenever the list changes (removal or reordering)
+    LaunchedEffect(selectedCharacters.toList()) {
+        viewModel.updatePlayer(playerIndex, player.copy(selectedChars = selectedCharacters.toList()))
+    }
 
     val labelSmallStyle = MaterialTheme.typography.labelSmall.toSpanStyle()
     val annotatedRestrictionsText = remember(selectedCharacters.size, viewModel.selectedMode, viewModel.alignmentN, viewModel.typeN, script) {
@@ -190,11 +213,9 @@ fun CharacterConfirmationScreen(
         bottomBar = {
             NavigationBar(
                 onBack = {
-                    viewModel.updatePlayer(playerIndex, player.copy(selectedChars = selectedCharacters.toList()))
                     onBack()
                 },
                 onNext = {
-                    viewModel.updatePlayer(playerIndex, player.copy(selectedChars = selectedCharacters.toList()))
                     onNext()
                 },
                 progress = 2,

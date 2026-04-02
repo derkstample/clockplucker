@@ -46,6 +46,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -114,7 +115,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun ClockPluckerApp(viewModel: MainViewModel) {
     val navController = rememberNavController()
-    var currentPlayerIndex by remember { mutableIntStateOf(0) }
+    var currentPlayerIndex by rememberSaveable { mutableIntStateOf(0) }
 
     NavHost(navController = navController, startDestination = Screen.ScriptScreen.route) {
         composable(Screen.ScriptScreen.route) {
@@ -210,7 +211,7 @@ fun SectionHeader(text: String, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp)
+            .padding(top = 12.dp)
     ) {
         if (text.isNotEmpty()) {
             Text(
@@ -254,7 +255,7 @@ fun NDropdown(
     min: Int,
     max: Int
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
 
     Box {
         Text(
