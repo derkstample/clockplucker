@@ -1,6 +1,7 @@
 package com.example.clockplucker.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,10 +12,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -25,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.clockplucker.HelpButton
 import com.example.clockplucker.MainViewModel
@@ -35,6 +40,8 @@ import com.example.clockplucker.SelectedModes
 import com.example.clockplucker.SelectedPriorities
 import com.example.clockplucker.data.CharAlignment
 import com.example.clockplucker.data.CharType
+import com.example.clockplucker.drawStableVerticalScrollbar
+import kotlin.math.roundToInt
 
 @Composable
 fun OptionsScreen(
@@ -43,6 +50,7 @@ fun OptionsScreen(
     viewModel: MainViewModel
 ) {
     var helpText by remember { mutableStateOf<String?>(null) }
+    val scrollState = rememberScrollState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -58,7 +66,8 @@ fun OptionsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
+                .drawStableVerticalScrollbar(state = scrollState)
+                .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp)
         ) {
             SectionHeader("SELECTION OPTIONS")
@@ -80,7 +89,7 @@ fun OptionsScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { viewModel.selectedMode = SelectedModes.fromInt(i) }
-                            .padding(vertical = 16.dp)
+                            .padding(vertical = 12.dp)
                     ) {
                         RadioButton(
                             selected = viewModel.selectedMode == SelectedModes.fromInt(i),
@@ -172,7 +181,7 @@ fun OptionsScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { viewModel.selectedPriority = SelectedPriorities.fromInt(i) }
-                            .padding(vertical = 16.dp)
+                            .padding(vertical = 12.dp)
                     ) {
                         RadioButton(
                             selected = viewModel.selectedPriority == SelectedPriorities.fromInt(i),
@@ -203,7 +212,7 @@ fun OptionsScreen(
                     modifier = Modifier
                         .weight(1f)
                         .clickable { viewModel.playerPriorityToggle = !viewModel.playerPriorityToggle }
-                        .padding(vertical = 16.dp)
+                        .padding(vertical = 12.dp)
                 ) {
                     Switch(
                         checked = viewModel.playerPriorityToggle,
@@ -217,6 +226,140 @@ fun OptionsScreen(
                 })
             }
 
+            if (viewModel.loadedScript?.containsSentinel == true) {
+                Spacer(modifier = Modifier.weight(1f))
+                SectionHeader("SENTINEL OPTIONS")
+
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { viewModel.autoSentinel = false }
+                                .padding(vertical = 12.dp)
+                        ) {
+                            RadioButton(
+                                selected = !viewModel.autoSentinel,
+                                onClick = { viewModel.autoSentinel = false }
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            var expanded by remember { mutableStateOf(false) }
+                            Box {
+                                Text(
+                                    text = (if (viewModel.sentinelMod >= 0) "+" else "") + viewModel.sentinelMod.toString(),
+                                    modifier = Modifier
+                                        .clickable { expanded = true }
+                                        .padding(horizontal = 4.dp),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        textDecoration = TextDecoration.Underline,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }
+                                ) {
+                                    listOf(1, 0, -1).forEach { n ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    text = (if (n >= 0) "+" else "") + n.toString(),
+                                                    style = MaterialTheme.typography.labelMedium
+                                                )
+                                            },
+                                            onClick = {
+                                                viewModel.sentinelMod = n
+                                                viewModel.autoSentinel = false
+                                                expanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                            Text(text = " Outsiders", style = MaterialTheme.typography.bodyMedium)
+                        }
+                        val sentinelHelpText = when (viewModel.sentinelMod) {
+                            1 -> "This script contains a Sentinel. This option forces the Sentinel to add 1 Outsider, removing 1 Townsfolk in the process."
+                            -1 -> "This script contains a Sentinel. This option forces the Sentinel to remove 1 Outsider, adding 1 Townsfolk in the process."
+                            else -> "This script contains a Sentinel. This option forces the Sentinel to have no effect on the number of Outsiders in the game."
+                        }
+                        HelpButton(onClick = { helpText = sentinelHelpText })
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { viewModel.autoSentinel = true }
+                                .padding(vertical = 12.dp)
+                        ) {
+                            RadioButton(
+                                selected = viewModel.autoSentinel,
+                                onClick = { viewModel.autoSentinel = true }
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(text = "Automatic", style = MaterialTheme.typography.bodyMedium)
+                        }
+                        HelpButton(onClick = {
+                            helpText = "This script contains a Sentinel. This option allows the Sentinel to automatically determine the best option to use when assigning characters to each player."
+                        })
+                    }
+                }
+            }
+
+            val surpriseChars = viewModel.loadedScript?.characters?.filter { it.thinksTheyAre.isNotEmpty() } ?: emptyList()
+            if (surpriseChars.isNotEmpty()) {
+                Spacer(modifier = Modifier.weight(1f))
+                SectionHeader("SURPRISE CHARACTERS")
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Surprise character chance: ${(viewModel.surpriseChance * 100).roundToInt()}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                        val surpriseNames = when (surpriseChars.size) {
+                            1 -> surpriseChars.first().name
+                            2 -> surpriseChars.joinToString(separator = " and ") { it.name }
+                            else -> surpriseChars.dropLast(1).joinToString(separator = ", ") { it.name } + ", and " + surpriseChars.last().name
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        HelpButton(onClick = {
+                            helpText = when (surpriseChars.size) {
+                                1 -> "The $surpriseNames is designed such that players cannot select it as preferred. Therefore, it can only be assigned if forced to, which will happen which will happen with a ${(viewModel.surpriseChance * 100).roundToInt()}% chance."
+                                else -> "The $surpriseNames are designed such that players cannot select them as preferred. Therefore, they can only be assigned if forced to, which will happen with a ${(viewModel.surpriseChance * 100).roundToInt()}% chance."
+                            }
+                        })
+                    }
+                    Slider(
+                        value = viewModel.surpriseChance,
+                        onValueChange = { viewModel.surpriseChance = it },
+                        valueRange = 0f..1f,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.weight(1f))
         }
     }

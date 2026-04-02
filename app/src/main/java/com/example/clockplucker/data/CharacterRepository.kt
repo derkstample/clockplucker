@@ -53,7 +53,7 @@ object CharacterRepository {
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_balloonist,
             ability = "Each night, you learn a player of a different character type than last night. [+0 or +1 Outsider]",
-            additiveModifiers = listOf(Count(townsfolk = -1, outsider = 1))
+            additiveModifiers = listOf(Count(), Count(townsfolk = -1, outsider = 1))
         ),
         "banshee" to Character(
             id = "banshee",
@@ -857,6 +857,10 @@ object CharacterRepository {
             icon = R.drawable.icon_xaan,
             ability = "On night X, all Townsfolk are poisoned until dusk. [X Outsiders]",
             additiveModifiers = listOf(
+                Count(townsfolk = 4, outsider = -4),
+                Count(townsfolk = 3, outsider = -3),
+                Count(townsfolk = 2, outsider = -2),
+                Count(townsfolk = 1, outsider = -1),
                 Count(),
                 Count(townsfolk = -1, outsider = 1),
                 Count(townsfolk = -2, outsider = 2),
@@ -900,9 +904,9 @@ object CharacterRepository {
             name = "Legion",
             type = CharType.DEMON,
             icon = R.drawable.icon_legion,
-            maxInstances = 10,
+            maxInstances = 15,
             ability = "Each night*, a player might die. Executions fail if only evil voted. You register as a Minion too. [Most players are Legion]",
-            overrideModifiers = listOf(CharType.MINION) // todo: this asshole
+            overrideModifiers = listOf(CharType.MINION)
         ),
         "leviathan" to Character(
             id = "leviathan",

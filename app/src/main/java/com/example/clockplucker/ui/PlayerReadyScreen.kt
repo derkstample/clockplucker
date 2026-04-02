@@ -120,7 +120,7 @@ fun PlayerReadyScreen(
                     onNext()
                 }) {
                     Text(
-                        text = "Ready",
+                        text = "READY",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary
                     )

@@ -1,5 +1,6 @@
 package com.example.clockplucker
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,6 +9,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -208,7 +210,7 @@ fun SectionHeader(text: String, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 12.dp)
     ) {
         if (text.isNotEmpty()) {
             Text(
@@ -282,6 +284,7 @@ fun NDropdown(
     }
 }
 
+@SuppressLint("FrequentlyChangingValue")
 @Composable
 fun Modifier.drawStableVerticalScrollbar(
     state: LazyListState,
@@ -332,6 +335,42 @@ fun Modifier.drawStableVerticalScrollbar(
         val scrollbarOffsetY = (scrolledDistance / estimatedTotalHeight) * viewportHeight
 
         // 3. Draw with the animated alpha
+        drawRoundRect(
+            color = color.copy(alpha = color.alpha * alpha.value),
+            topLeft = Offset(size.width - 8.dp.toPx(), scrollbarOffsetY),
+            size = Size(4.dp.toPx(), scrollbarHeight),
+            cornerRadius = CornerRadius(2.dp.toPx())
+        )
+    }
+}
+
+@SuppressLint("FrequentlyChangingValue")
+@Composable
+fun Modifier.drawStableVerticalScrollbar(
+    state: ScrollState,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+): Modifier {
+    val alpha = remember { Animatable(0f) }
+
+    LaunchedEffect(state.value) {
+        alpha.snapTo(1f)
+        delay(800L)
+        alpha.animateTo(0f, animationSpec = tween(500))
+    }
+
+    return this.drawWithContent {
+        drawContent()
+
+        if (alpha.value == 0f) return@drawWithContent
+
+        val viewportHeight = size.height
+        val contentHeight = state.maxValue + viewportHeight
+
+        if (contentHeight <= viewportHeight) return@drawWithContent
+
+        val scrollbarHeight = (viewportHeight / contentHeight) * viewportHeight
+        val scrollbarOffsetY = (state.value / contentHeight) * viewportHeight
+
         drawRoundRect(
             color = color.copy(alpha = color.alpha * alpha.value),
             topLeft = Offset(size.width - 8.dp.toPx(), scrollbarOffsetY),

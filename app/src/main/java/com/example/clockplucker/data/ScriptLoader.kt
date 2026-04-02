@@ -11,13 +11,13 @@ class ScriptLoader {
         val characters = mutableListOf<Character>()
         var scriptName = "Unknown Script"
         var scriptAuthor = "Unknown Author"
+        var sentinel = false
+        var pope = false
 
         try {
             val array = JSONArray(jsonString)
             for (i in 0 until array.length()) {
-                val item = array.get(i)
-                
-                when (item) {
+                when (val item = array.get(i)) {
                     is JSONObject -> {
                         val id = item.optString("id")
                         
@@ -45,6 +45,8 @@ class ScriptLoader {
                         characters.add(Character(id = id,name = name, type = type, icon = 0, ability = ability))
                     }
                     is String -> {
+                        if (item == "sentinel") sentinel = true
+                        else if (item == "pope") pope = true
                         val characterInfo = CharacterRepository.getCharacterInfo(item)
                         if(characterInfo != null) {
                             characters.add(characterInfo)
@@ -55,7 +57,7 @@ class ScriptLoader {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return Script(name = scriptName, author = scriptAuthor, characters = characters)
+        return Script(name = scriptName, author = scriptAuthor, characters = characters, containsSentinel = sentinel, containsPope = pope)
     }
 
     private fun formatIdToName(id: String): String {

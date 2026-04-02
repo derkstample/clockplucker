@@ -204,7 +204,6 @@ fun SelectedScriptArea(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
             .clickable(enabled = loadedScript != null, onClick = onNext),
         shape = MaterialTheme.shapes.medium
     ) {

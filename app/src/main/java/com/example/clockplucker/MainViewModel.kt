@@ -2,6 +2,7 @@ package com.example.clockplucker
 
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +79,11 @@ class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
 
     var alignmentN by mutableIntStateOf(1)
     var typeN by mutableIntStateOf(1)
+
+    var autoSentinel by mutableStateOf(false)
+    var sentinelMod by mutableIntStateOf(0)
+
+    var surpriseChance by mutableFloatStateOf(0f)
 
     fun updatePlayer(index: Int, player: Player) {
         if (index in players.indices) {

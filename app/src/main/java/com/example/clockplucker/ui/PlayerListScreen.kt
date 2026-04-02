@@ -522,10 +522,7 @@ fun PriorityDropdown(
                 AutoResizingText(
                     text = selected,
                     modifier = Modifier.padding(horizontal = 4.dp),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        color = contentColor
-                    ),
-                    textAlign = TextAlign.Center
+                    style = MaterialTheme.typography.labelMedium.copy(color = contentColor)
                 )
             }
         }
@@ -550,8 +547,7 @@ fun PriorityDropdown(
 fun AutoResizingText(
     text: String,
     style: TextStyle,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null
+    modifier: Modifier = Modifier
 ) {
     var fontSizeValue by remember(text) { mutableFloatStateOf(style.fontSize.value) }
     var readyToDraw by remember(text) { mutableStateOf(false) }

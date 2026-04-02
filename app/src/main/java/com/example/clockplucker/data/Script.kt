@@ -6,5 +6,7 @@ data class Script(
     val id: UUID = UUID.randomUUID(),
     val name: String,
     val author: String,
-    val characters: List<Character> = emptyList()
+    val characters: List<Character> = emptyList(),
+    val containsSentinel: Boolean = false,
+    val containsPope: Boolean = false
 )
