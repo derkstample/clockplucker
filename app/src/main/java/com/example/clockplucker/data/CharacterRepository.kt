@@ -4,858 +4,859 @@ import com.example.clockplucker.R
 
 object CharacterRepository {
     private val characterData = mapOf(
+        // TOWNSFOLK //
         "acrobat" to Character(
             id = "acrobat",
-            name = "Acrobat",
+            name = TextValue.Resource(R.string.name_acrobat),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_acrobat,
-            ability = "Each night*, choose a player: if they are or become drunk or poisoned tonight, you die."
+            ability = TextValue.Resource(R.string.ability_acrobat)
         ),
         "alchemist" to Character(
             id = "alchemist",
-            name = "Alchemist",
+            name = TextValue.Resource(R.string.name_alchemist),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_alchemist,
-            ability = "You have a Minion ability. When using this, the Storyteller may prompt you to choose differently."
+            ability = TextValue.Resource(R.string.ability_alchemist)
         ),
         "alsaahir" to Character(
             id = "alsaahir",
-            name = "Alsaahir",
+            name = TextValue.Resource(R.string.name_alsaahir),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_alsaahir,
-            ability = "Each day, if you publicly guess which players are Minion(s) and which are Demon(s), good wins."
+            ability = TextValue.Resource(R.string.ability_alsaahir)
         ),
         "amnesiac" to Character(
             id = "amnesiac",
-            name = "Amnesiac",
+            name = TextValue.Resource(R.string.name_amnesiac),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_amnesiac,
-            ability = "You do not know what your ability is. Each day, privately guess what it is: you learn how accurate you are."
+            ability = TextValue.Resource(R.string.ability_amnesiac)
         ),
         "artist" to Character(
             id = "artist",
-            name = "Artist",
+            name = TextValue.Resource(R.string.name_artist),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_artist,
-            ability = "Once per game, during the day, privately ask the Storyteller any yes/no question."
+            ability = TextValue.Resource(R.string.ability_artist)
         ),
         "atheist" to Character(
             id = "atheist",
-            name = "Atheist",
+            name = TextValue.Resource(R.string.name_atheist),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_atheist,
-            ability = "The Storyteller can break the game rules, and if executed, good wins, even if you are dead. [No evil characters]",
+            ability = TextValue.Resource(R.string.ability_atheist),
             overrideModifiers = listOf(CharType.MINION, CharType.DEMON)
         ),
         "balloonist" to Character(
             id = "balloonist",
-            name = "Balloonist",
+            name = TextValue.Resource(R.string.name_balloonist),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_balloonist,
-            ability = "Each night, you learn a player of a different character type than last night. [+0 or +1 Outsider]",
+            ability = TextValue.Resource(R.string.ability_balloonist),
             additiveModifiers = listOf(Count(), Count(townsfolk = -1, outsider = 1))
         ),
         "banshee" to Character(
             id = "banshee",
-            name = "Banshee",
+            name = TextValue.Resource(R.string.name_banshee),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_banshee,
-            ability = "If the Demon kills you, all players learn this. From now on, you may nominate twice per day and vote twice per nomination."
+            ability = TextValue.Resource(R.string.ability_banshee)
         ),
         "bountyhunter" to Character(
             id = "bountyhunter",
-            name = "Bounty Hunter",
+            name = TextValue.Resource(R.string.name_bountyhunter),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_bountyhunter,
-            ability = "You start knowing 1 evil player. If the player you know dies, you learn another evil player tonight. [1 Townsfolk is evil]"
+            ability = TextValue.Resource(R.string.ability_bountyhunter)
         ),
         "cannibal" to Character(
             id = "cannibal",
-            name = "Cannibal",
+            name = TextValue.Resource(R.string.name_cannibal),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_cannibal,
-            ability = "You have the ability of the recently killed executee. If they are evil, you are poisoned until a good player dies by execution."
+            ability = TextValue.Resource(R.string.ability_cannibal)
         ),
         "chambermaid" to Character(
             id = "chambermaid",
-            name = "Chambermaid",
+            name = TextValue.Resource(R.string.name_chambermaid),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_chambermaid,
-            ability = "Each night, choose 2 alive players (not yourself): you learn how many woke tonight due to their ability."
+            ability = TextValue.Resource(R.string.ability_chambermaid)
         ),
         "chef" to Character(
             id = "chef",
-            name = "Chef",
+            name = TextValue.Resource(R.string.name_chef),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_chef,
-            ability = "You start knowing how many pairs of evil players there are."
+            ability = TextValue.Resource(R.string.ability_chef)
         ),
         "choirboy" to Character(
             id = "choirboy",
-            name = "Choirboy",
+            name = TextValue.Resource(R.string.name_choirboy),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_choirboy,
             dependsOn = "king",
-            ability = "If the Demon kills the King, you learn which player is the Demon. [+the King]"
+            ability = TextValue.Resource(R.string.ability_choirboy)
         ),
         "clockmaker" to Character(
             id = "clockmaker",
-            name = "Clockmaker",
+            name = TextValue.Resource(R.string.name_clockmaker),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_clockmaker,
-            ability = "You start knowing how many steps from the Demon to its nearest Minion."
+            ability = TextValue.Resource(R.string.ability_clockmaker)
         ),
         "courtier" to Character(
             id = "courtier",
-            name = "Courtier",
+            name = TextValue.Resource(R.string.name_courtier),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_courtier,
-            ability = "Once per game, at night, choose a character: they are drunk for 3 nights & 3 days."
+            ability = TextValue.Resource(R.string.ability_courtier)
         ),
         "cultleader" to Character(
             id = "cultleader",
-            name = "Cult Leader",
+            name = TextValue.Resource(R.string.name_cultleader),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_cultleader,
-            ability = "Each night, you become the alignment of an alive neighbor. If all good players choose to join your cult, your team wins."
+            ability = TextValue.Resource(R.string.ability_cultleader)
         ),
         "dreamer" to Character(
             id = "dreamer",
-            name = "Dreamer",
+            name = TextValue.Resource(R.string.name_dreamer),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_dreamer,
-            ability = "Each night, choose a player (not yourself or Travellers): you learn 1 good & 1 evil character, 1 of which is correct."
+            ability = TextValue.Resource(R.string.ability_dreamer)
         ),
         "empath" to Character(
             id = "empath",
-            name = "Empath",
+            name = TextValue.Resource(R.string.name_empath),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_empath,
-            ability = "Each night, you learn how many of your 2 alive neighbors are evil."
+            ability = TextValue.Resource(R.string.ability_empath)
         ),
         "engineer" to Character(
             id = "engineer",
-            name = "Engineer",
+            name = TextValue.Resource(R.string.name_engineer),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_engineer,
-            ability = "Once per game, at night, choose which Minions or which Demon is in play."
+            ability = TextValue.Resource(R.string.ability_engineer)
         ),
         "exorcist" to Character(
             id = "exorcist",
-            name = "Exorcist",
+            name = TextValue.Resource(R.string.name_exorcist),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_exorcist,
-            ability = "Each night*, choose a player (different to last night): the Demon, if chosen, learns who you are then doesn't wake tonight."
+            ability = TextValue.Resource(R.string.ability_exorcist)
         ),
         "farmer" to Character(
             id = "farmer",
-            name = "Farmer",
+            name = TextValue.Resource(R.string.name_farmer),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_farmer,
-            ability = "When you die at night, an alive good player becomes a Farmer."
+            ability = TextValue.Resource(R.string.ability_farmer)
         ),
         "fisherman" to Character(
             id = "fisherman",
-            name = "Fisherman",
+            name = TextValue.Resource(R.string.name_fisherman),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_fisherman,
-            ability = "Once per game, during the day, visit the Storyteller for some advice to help your team win."
+            ability = TextValue.Resource(R.string.ability_fisherman)
         ),
         "flowergirl" to Character(
             id = "flowergirl",
-            name = "Flowergirl",
+            name = TextValue.Resource(R.string.name_flowergirl),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_flowergirl,
-            ability = "Each night*, you learn if a Demon voted today."
+            ability = TextValue.Resource(R.string.ability_flowergirl)
         ),
         "fool" to Character(
             id = "fool",
-            name = "Fool",
+            name = TextValue.Resource(R.string.name_fool),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_fool,
-            ability = "The 1st time you die, you don't."
+            ability = TextValue.Resource(R.string.ability_fool)
         ),
         "fortuneteller" to Character(
             id = "fortuneteller",
-            name = "Fortune Teller",
+            name = TextValue.Resource(R.string.name_fortuneteller),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_fortuneteller,
-            ability = "Each night, choose 2 players: you learn if either is a Demon. There is a good player that registers as a Demon to you."
+            ability = TextValue.Resource(R.string.ability_fortuneteller)
         ),
         "gambler" to Character(
             id = "gambler",
-            name = "Gambler",
+            name = TextValue.Resource(R.string.name_gambler),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_gambler,
-            ability = "Each night*, choose a player & guess their character: if you guess wrong, you die."
+            ability = TextValue.Resource(R.string.ability_gambler)
         ),
         "general" to Character(
             id = "general",
-            name = "General",
+            name = TextValue.Resource(R.string.name_general),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_general,
-            ability = "Each night, you learn which alignment the Storyteller believes is winning: good, evil, or neither."
+            ability = TextValue.Resource(R.string.ability_general)
         ),
         "gossip" to Character(
             id = "gossip",
-            name = "Gossip",
+            name = TextValue.Resource(R.string.name_gossip),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_gossip,
-            ability = "Each day, you may make a public statement. Tonight, if it was true, a player dies."
+            ability = TextValue.Resource(R.string.ability_gossip)
         ),
         "grandmother" to Character(
             id = "grandmother",
-            name = "Grandmother",
+            name = TextValue.Resource(R.string.name_grandmother),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_grandmother,
-            ability = "You start knowing a good player & their character. If the Demon kills them, you die too."
+            ability = TextValue.Resource(R.string.ability_grandmother)
         ),
         "highpriestess" to Character(
             id = "highpriestess",
-            name = "High Priestess",
+            name = TextValue.Resource(R.string.name_highpriestess),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_highpriestess,
-            ability = "Each night, learn which player the Storyteller believes you should talk to most."
+            ability = TextValue.Resource(R.string.ability_highpriestess)
         ),
         "huntsman" to Character(
             id = "huntsman",
-            name = "Huntsman",
+            name = TextValue.Resource(R.string.name_huntsman),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_huntsman,
             dependsOn = "damsel",
-            ability = "Once per game, at night, choose a living player: the Damsel, if chosen, becomes a not-in-play Townsfolk. [+the Damsel]"
+            ability = TextValue.Resource(R.string.ability_huntsman)
         ),
         "innkeeper" to Character(
             id = "innkeeper",
-            name = "Innkeeper",
+            name = TextValue.Resource(R.string.name_innkeeper),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_innkeeper,
-            ability = "Each night*, choose 2 players: they can't die tonight, but 1 is drunk until dusk."
+            ability = TextValue.Resource(R.string.ability_innkeeper)
         ),
         "investigator" to Character(
             id = "investigator",
-            name = "Investigator",
+            name = TextValue.Resource(R.string.name_investigator),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_investigator,
-            ability = "You start knowing that 1 of 2 players is a particular Minion."
+            ability = TextValue.Resource(R.string.ability_investigator)
         ),
         "juggler" to Character(
             id = "juggler",
-            name = "Juggler",
+            name = TextValue.Resource(R.string.name_juggler),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_juggler,
-            ability = "On your 1st day, publicly guess up to 5 players' characters. That night, you learn how many you got correct."
+            ability = TextValue.Resource(R.string.ability_juggler)
         ),
         "king" to Character(
             id = "king",
-            name = "King",
+            name = TextValue.Resource(R.string.name_king),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_king,
-            ability = "Each night, if the dead equal or outnumber the living, you learn 1 alive character. The Demon knows you are the King."
+            ability = TextValue.Resource(R.string.ability_king)
         ),
         "knight" to Character(
             id = "knight",
-            name = "Knight",
+            name = TextValue.Resource(R.string.name_knight),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_knight,
-            ability = "You start knowing 2 players that are not the Demon."
+            ability = TextValue.Resource(R.string.ability_knight)
         ),
         "librarian" to Character(
             id = "librarian",
-            name = "Librarian",
+            name = TextValue.Resource(R.string.name_librarian),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_librarian,
-            ability = "You start knowing that 1 of 2 players is a particular Outsider. (Or that zero are in play.)"
+            ability = TextValue.Resource(R.string.ability_librarian)
         ),
         "lycanthrope" to Character(
             id = "lycanthrope",
-            name = "Lycanthrope",
+            name = TextValue.Resource(R.string.name_lycanthrope),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_lycanthrope,
-            ability = "Each night*, choose an alive player. If good, they die & the Demon doesn’t kill tonight. One good player registers as evil."
+            ability = TextValue.Resource(R.string.ability_lycanthrope)
         ),
         "magician" to Character(
             id = "magician",
-            name = "Magician",
+            name = TextValue.Resource(R.string.name_magician),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_magician,
-            ability = "The Demon thinks you are a Minion. Minions think you are a Demon."
+            ability = TextValue.Resource(R.string.ability_magician)
         ),
         "mathematician" to Character(
             id = "mathematician",
-            name = "Mathematician",
+            name = TextValue.Resource(R.string.name_mathematician),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_mathematician,
-            ability = "Each night, you learn how many players’ abilities worked abnormally (since dawn) due to another character's ability."
+            ability = TextValue.Resource(R.string.ability_mathematician)
         ),
         "mayor" to Character(
             id = "mayor",
-            name = "Mayor",
+            name = TextValue.Resource(R.string.name_mayor),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_mayor,
-            ability = "If only 3 players live & no execution occurs, your team wins. If you die at night, another player might die instead."
+            ability = TextValue.Resource(R.string.ability_mayor)
         ),
         "minstrel" to Character(
             id = "minstrel",
-            name = "Minstrel",
+            name = TextValue.Resource(R.string.name_minstrel),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_minstrel,
-            ability = "When a Minion dies by execution, all other players (except Travellers) are drunk until dusk tomorrow."
+            ability = TextValue.Resource(R.string.ability_minstrel)
         ),
         "monk" to Character(
             id = "monk",
-            name = "Monk",
+            name = TextValue.Resource(R.string.name_monk),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_monk,
-            ability = "Each night*, choose a player (not yourself): they are safe from the Demon tonight."
+            ability = TextValue.Resource(R.string.ability_monk)
         ),
         "nightwatchman" to Character(
             id = "nightwatchman",
-            name = "Nightwatchman",
+            name = TextValue.Resource(R.string.name_nightwatchman),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_nightwatchman,
-            ability = "Once per game, at night, choose a player: they learn you are the Nightwatchman."
+            ability = TextValue.Resource(R.string.ability_nightwatchman)
         ),
         "noble" to Character(
             id = "noble",
-            name = "Noble",
+            name = TextValue.Resource(R.string.name_noble),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_noble,
-            ability = "You start knowing 3 players, 1 and only 1 of which is evil."
+            ability = TextValue.Resource(R.string.ability_noble)
         ),
         "oracle" to Character(
             id = "oracle",
-            name = "Oracle",
+            name = TextValue.Resource(R.string.name_oracle),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_oracle,
-            ability = "Each night*, you learn how many dead players are evil."
+            ability = TextValue.Resource(R.string.ability_oracle)
         ),
         "pacifist" to Character(
             id = "pacifist",
-            name = "Pacifist",
+            name = TextValue.Resource(R.string.name_pacifist),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_pacifist,
-            ability = "Executed good players might not die."
+            ability = TextValue.Resource(R.string.ability_pacifist)
         ),
         "philosopher" to Character(
             id = "philosopher",
-            name = "Philosopher",
+            name = TextValue.Resource(R.string.name_philosopher),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_philosopher,
-            ability = "Once per game, at night, choose a good character: gain that ability. If this character is in play, they are drunk."
+            ability = TextValue.Resource(R.string.ability_philosopher)
         ),
         "pixie" to Character(
             id = "pixie",
-            name = "Pixie",
+            name = TextValue.Resource(R.string.name_pixie),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_pixie,
-            ability = "You start knowing 1 in-play Townsfolk. If you were mad that you were this character, you gain their ability when they die."
+            ability = TextValue.Resource(R.string.ability_pixie)
         ),
         "poppygrower" to Character(
             id = "poppygrower",
-            name = "Poppy Grower",
+            name = TextValue.Resource(R.string.name_poppygrower),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_poppygrower,
-            ability = "Minions & Demons do not know each other. If you die, they learn who each other are that night."
+            ability = TextValue.Resource(R.string.ability_poppygrower)
         ),
         "preacher" to Character(
             id = "preacher",
-            name = "Preacher",
+            name = TextValue.Resource(R.string.name_preacher),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_preacher,
-            ability = "Each night, choose a player: a Minion, if chosen, learns this. All chosen Minions have no ability."
+            ability = TextValue.Resource(R.string.ability_preacher)
         ),
         "princess" to Character(
             id = "princess",
-            name = "Princess",
+            name = TextValue.Resource(R.string.name_princess),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_princess,
-            ability = "On your 1st day, if you nominated & executed a player, the Demon doesn't kill tonight."
+            ability = TextValue.Resource(R.string.ability_princess)
         ),
         "professor" to Character(
             id = "professor",
-            name = "Professor",
+            name = TextValue.Resource(R.string.name_professor),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_professor,
-            ability = "Once per game, at night*, choose a dead player: if they are a Townsfolk, they are resurrected."
+            ability = TextValue.Resource(R.string.ability_professor)
         ),
         "ravenkeeper" to Character(
             id = "ravenkeeper",
-            name = "Ravenkeeper",
+            name = TextValue.Resource(R.string.name_ravenkeeper),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_ravenkeeper,
-            ability = "If you die at night, you are woken to choose a player: you learn their character."
+            ability = TextValue.Resource(R.string.ability_ravenkeeper)
         ),
         "sage" to Character(
             id = "sage",
-            name = "Sage",
+            name = TextValue.Resource(R.string.name_sage),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_sage,
-            ability = "If the Demon kills you, you learn that it is 1 of 2 players."
+            ability = TextValue.Resource(R.string.ability_sage)
         ),
         "sailor" to Character(
             id = "sailor",
-            name = "Sailor",
+            name = TextValue.Resource(R.string.name_sailor),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_sailor,
-            ability = "Each night, choose an alive player: either you or they are drunk until dusk. You can't die."
+            ability = TextValue.Resource(R.string.ability_sailor)
         ),
         "savant" to Character(
             id = "savant",
-            name = "Savant",
+            name = TextValue.Resource(R.string.name_savant),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_savant,
-            ability = "Each day, you may visit the Storyteller to learn 2 things in private: 1 is true & 1 is false."
+            ability = TextValue.Resource(R.string.ability_savant)
         ),
         "seamstress" to Character(
             id = "seamstress",
-            name = "Seamstress",
+            name = TextValue.Resource(R.string.name_seamstress),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_seamstress,
-            ability = "Once per game, at night, choose 2 players (not yourself): you learn if they are the same alignment."
+            ability = TextValue.Resource(R.string.ability_seamstress)
         ),
         "shugenja" to Character(
             id = "shugenja",
-            name = "Shugenja",
+            name = TextValue.Resource(R.string.name_shugenja),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_shugenja,
-            ability = "You start knowing if your closest evil player is clockwise or anti-clockwise. If equidistant, this info is arbitrary."
+            ability = TextValue.Resource(R.string.ability_shugenja)
         ),
         "slayer" to Character(
             id = "slayer",
-            name = "Slayer",
+            name = TextValue.Resource(R.string.name_slayer),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_slayer,
-            ability = "Once per game, during the day, publicly choose a player: if they are the Demon, they die."
+            ability = TextValue.Resource(R.string.ability_slayer)
         ),
         "snakecharmer" to Character(
             id = "snakecharmer",
-            name = "Snake Charmer",
+            name = TextValue.Resource(R.string.name_snakecharmer),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_snakecharmer,
-            ability = "Each night, choose an alive player: a chosen Demon swaps characters & alignments with you & is then poisoned."
+            ability = TextValue.Resource(R.string.ability_snakecharmer)
         ),
         "soldier" to Character(
             id = "soldier",
-            name = "Soldier",
+            name = TextValue.Resource(R.string.name_soldier),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_soldier,
-            ability = "You are safe from the Demon."
+            ability = TextValue.Resource(R.string.ability_soldier)
         ),
         "steward" to Character(
             id = "steward",
-            name = "Steward",
+            name = TextValue.Resource(R.string.name_steward),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_steward,
-            ability = "You start knowing 1 good player."
+            ability = TextValue.Resource(R.string.ability_steward)
         ),
         "tealady" to Character(
             id = "tealady",
-            name = "Tea Lady",
+            name = TextValue.Resource(R.string.name_tealady),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_tealady,
-            ability = "If both your alive neighbors are good, they can't die."
+            ability = TextValue.Resource(R.string.ability_tealady)
         ),
         "towncrier" to Character(
             id = "towncrier",
-            name = "Town Crier",
+            name = TextValue.Resource(R.string.name_towncrier),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_towncrier,
-            ability = "Each night*, you learn if a Minion nominated today."
+            ability = TextValue.Resource(R.string.ability_towncrier)
         ),
         "undertaker" to Character(
             id = "undertaker",
-            name = "Undertaker",
+            name = TextValue.Resource(R.string.name_undertaker),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_undertaker,
-            ability = "Each night*, you learn which character died by execution today."
+            ability = TextValue.Resource(R.string.ability_undertaker)
         ),
         "villageidiot" to Character(
             id = "villageidiot",
-            name = "Village Idiot",
+            name = TextValue.Resource(R.string.name_villageidiot),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_villageidiot,
             maxInstances = 3,
-            ability = "Each night, choose a player: you learn their alignment. [+0 to +2 Village Idiots. 1 of the extras is drunk]"
+            ability = TextValue.Resource(R.string.ability_villageidiot)
         ),
         "virgin" to Character(
             id = "virgin",
-            name = "Virgin",
+            name = TextValue.Resource(R.string.name_virgin),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_virgin,
-            ability = "The 1st time you are nominated, if the nominator is a Townsfolk, they are executed immediately."
+            ability = TextValue.Resource(R.string.ability_virgin)
         ),
         "washerwoman" to Character(
             id = "washerwoman",
-            name = "Washerwoman",
+            name = TextValue.Resource(R.string.name_washerwoman),
             type = CharType.TOWNSFOLK,
             icon = R.drawable.icon_washerwoman,
-            ability = "You start knowing that 1 of 2 players is a particular Townsfolk."
+            ability = TextValue.Resource(R.string.ability_washerwoman)
         ),
         // OUTSIDERS //
         "barber" to Character(
             id = "barber",
-            name = "Barber",
+            name = TextValue.Resource(R.string.name_barber),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_barber,
-            ability = "If you died today or tonight, the Demon may choose 2 players (not another Demon) to swap characters."
+            ability = TextValue.Resource(R.string.ability_barber)
         ),
         "butler" to Character(
             id = "butler",
-            name = "Butler",
+            name = TextValue.Resource(R.string.name_butler),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_butler,
-            ability = "Each night, choose a player (not yourself): tomorrow, you may only vote if they are voting too."
+            ability = TextValue.Resource(R.string.ability_butler)
         ),
         "damsel" to Character(
             id = "damsel",
-            name = "Damsel",
+            name = TextValue.Resource(R.string.name_damsel),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_damsel,
-            ability = "All Minions know a Damsel is in play. If a Minion publicly guesses you (once), your team loses."
+            ability = TextValue.Resource(R.string.ability_damsel)
         ),
         "drunk" to Character(
             id = "drunk",
-            name = "Drunk",
+            name = TextValue.Resource(R.string.name_drunk),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_drunk,
-            ability = "You do not know you are the Drunk. You think you are a Townsfolk character, but you are not.",
+            ability = TextValue.Resource(R.string.ability_drunk),
             thinksTheyAre = listOf(CharType.TOWNSFOLK)
         ),
         "golem" to Character(
             id = "golem",
-            name = "Golem",
+            name = TextValue.Resource(R.string.name_golem),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_golem,
-            ability = "You may only nominate once per game. When you do, if the nominee is not the Demon, they die."
+            ability = TextValue.Resource(R.string.ability_golem)
         ),
         "goon" to Character(
             id = "goon",
-            name = "Goon",
+            name = TextValue.Resource(R.string.name_goon),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_goon,
-            ability = "Each night, the 1st player to choose you with their ability is drunk until dusk. You become their alignment."
+            ability = TextValue.Resource(R.string.ability_goon)
         ),
         "hatter" to Character(
             id = "hatter",
-            name = "Hatter",
+            name = TextValue.Resource(R.string.name_hatter),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_hatter,
-            ability = "If you died today or tonight, the Minion & Demon players may choose new Minion & Demon characters to be."
+            ability = TextValue.Resource(R.string.ability_hatter)
         ),
         "heretic" to Character(
             id = "heretic",
-            name = "Heretic",
+            name = TextValue.Resource(R.string.name_heretic),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_heretic,
             hardJinxedWith = listOf("baron","godfather","lleech","pithag","spy","widow"),
-            ability = "Whoever wins, loses & whoever loses, wins, even if you are dead."
+            ability = TextValue.Resource(R.string.ability_heretic)
         ),
         "hermit" to Character(
             id = "hermit",
-            name = "Hermit",
+            name = TextValue.Resource(R.string.name_hermit),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_heretic,
-            ability = "You have all Outsider abilities. [-0 or -1 Outsider]",
+            ability = TextValue.Resource(R.string.ability_hermit),
             additiveModifiers = listOf(Count(), Count(townsfolk = 1, outsider = -1))
         ),
         "klutz" to Character(
             id = "klutz",
-            name = "Klutz",
+            name = TextValue.Resource(R.string.name_klutz),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_klutz,
-            ability = "When you learn that you died, publicly choose 1 alive player: if they are evil, your team loses."
+            ability = TextValue.Resource(R.string.ability_klutz)
         ),
         "lunatic" to Character(
             id = "lunatic",
-            name = "Lunatic",
+            name = TextValue.Resource(R.string.name_lunatic),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_lunatic,
-            ability = "You think you are a Demon, but you are not. The Demon knows who you are & who you choose at night.",
+            ability = TextValue.Resource(R.string.ability_lunatic),
             thinksTheyAre = listOf(CharType.DEMON)
         ),
         "moonchild" to Character(
             id = "moonchild",
-            name = "Moonchild",
+            name = TextValue.Resource(R.string.name_moonchild),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_moonchild,
-            ability = "When you learn that you died, publicly choose 1 alive player. Tonight, if it was a good player, they die."
+            ability = TextValue.Resource(R.string.ability_moonchild)
         ),
         "mutant" to Character(
             id = "mutant",
-            name = "Mutant",
+            name = TextValue.Resource(R.string.name_mutant),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_mutant,
-            ability = "If you are “mad” about being an Outsider, you might be executed."
+            ability = TextValue.Resource(R.string.ability_mutant)
         ),
         "ogre" to Character(
             id = "ogre",
-            name = "Ogre",
+            name = TextValue.Resource(R.string.name_ogre),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_ogre,
-            ability = "On your 1st night, choose a player (not yourself): you become their alignment (you don't know which) even if drunk or poisoned."
+            ability = TextValue.Resource(R.string.ability_ogre)
         ),
         "plaguedoctor" to Character(
             id = "plaguedoctor",
-            name = "Plague Doctor",
+            name = TextValue.Resource(R.string.name_plaguedoctor),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_plaguedoctor,
-            ability = "When you die, the Storyteller gains a Minion ability."
+            ability = TextValue.Resource(R.string.ability_plaguedoctor)
         ),
         "politician" to Character(
             id = "politician",
-            name = "Politician",
+            name = TextValue.Resource(R.string.name_politician),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_politician,
-            ability = "If you were the player most responsible for your team losing, you change alignment & win, even if dead."
+            ability = TextValue.Resource(R.string.ability_politician)
         ),
         "puzzlemaster" to Character(
             id = "puzzlemaster",
-            name = "Puzzlemaster",
+            name = TextValue.Resource(R.string.name_puzzlemaster),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_puzzlemaster,
-            ability = "1 player is drunk, even if you die. If you guess (once) who it is, learn the Demon player, but guess wrong & get false info."
+            ability = TextValue.Resource(R.string.ability_puzzlemaster)
         ),
         "recluse" to Character(
             id = "recluse",
-            name = "Recluse",
+            name = TextValue.Resource(R.string.name_recluse),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_recluse,
-            ability = "You might register as evil & as a Minion or Demon, even if dead."
+            ability = TextValue.Resource(R.string.ability_recluse)
         ),
         "saint" to Character(
             id = "saint",
-            name = "Saint",
+            name = TextValue.Resource(R.string.name_saint),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_saint,
-            ability = "If you die by execution, your team loses."
+            ability = TextValue.Resource(R.string.ability_saint)
         ),
         "snitch" to Character(
             id = "snitch",
-            name = "Snitch",
+            name = TextValue.Resource(R.string.name_snitch),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_snitch,
-            ability = "Each Minion gets 3 bluffs."
+            ability = TextValue.Resource(R.string.ability_snitch)
         ),
         "sweetheart" to Character(
             id = "sweetheart",
-            name = "Sweetheart",
+            name = TextValue.Resource(R.string.name_sweetheart),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_sweetheart,
-            ability = "When you die, 1 player is drunk from now on."
+            ability = TextValue.Resource(R.string.ability_sweetheart)
         ),
         "tinker" to Character(
             id = "tinker",
-            name = "Tinker",
+            name = TextValue.Resource(R.string.name_tinker),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_tinker,
-            ability = "You might die at any time."
+            ability = TextValue.Resource(R.string.ability_tinker)
         ),
         "zealot" to Character(
             id = "zealot",
-            name = "Zealot",
+            name = TextValue.Resource(R.string.name_zealot),
             type = CharType.OUTSIDER,
             icon = R.drawable.icon_zealot,
-            ability = "If there are 5 or more players alive, you must vote for every nomination."
+            ability = TextValue.Resource(R.string.ability_zealot)
         ),
         // MINIONS //
         "assassin" to Character(
             id = "assassin",
-            name = "Assassin",
+            name = TextValue.Resource(R.string.name_assassin),
             type = CharType.MINION,
             icon = R.drawable.icon_assassin,
-            ability = "Once per game, at night*, choose a player: they die, even if for some reason they could not."
+            ability = TextValue.Resource(R.string.ability_assassin)
         ),
         "baron" to Character(
             id = "baron",
-            name = "Baron",
+            name = TextValue.Resource(R.string.name_baron),
             type = CharType.MINION,
             icon = R.drawable.icon_baron,
             hardJinxedWith = listOf("heretic"),
-            ability = "There are extra Outsiders in play. [+2 Outsiders]",
+            ability = TextValue.Resource(R.string.ability_baron),
             additiveModifiers = listOf(Count(townsfolk = -2, outsider = 2))
         ),
         "boffin" to Character(
             id = "boffin",
-            name = "Boffin",
+            name = TextValue.Resource(R.string.name_boffin),
             type = CharType.MINION,
             icon = R.drawable.icon_boffin,
-            ability = "The Demon (even if drunk or poisoned) has a not-in-play good character’s ability. You both know which."
+            ability = TextValue.Resource(R.string.ability_boffin)
         ),
         "boomdandy" to Character(
             id = "boomdandy",
-            name = "Boomdandy",
+            name = TextValue.Resource(R.string.name_boomdandy),
             type = CharType.MINION,
             icon = R.drawable.icon_boomdandy,
-            ability = "If you are executed, all but 3 players die. After a 10 to 1 countdown, the player with the most players pointing at them, dies."
+            ability = TextValue.Resource(R.string.ability_boomdandy)
         ),
         "cerenovus" to Character(
             id = "cerenovus",
-            name = "Cerenovus",
+            name = TextValue.Resource(R.string.name_cerenovus),
             type = CharType.MINION,
             icon = R.drawable.icon_cerenovus,
-            ability = "Each night, choose a player & a good character: they are “mad” they are this character tomorrow, or might be executed."
+            ability = TextValue.Resource(R.string.ability_cerenovus)
         ),
         "devilsadvocate" to Character(
             id = "devilsadvocate",
-            name = "Devil's Advocate",
+            name = TextValue.Resource(R.string.name_devilsadvocate),
             type = CharType.MINION,
             icon = R.drawable.icon_devilsadvocate,
-            ability = "Each night, choose a living player (different to last night): if executed tomorrow, they don't die."
+            ability = TextValue.Resource(R.string.ability_devilsadvocate)
         ),
         "eviltwin" to Character(
             id = "eviltwin",
-            name = "Evil Twin",
+            name = TextValue.Resource(R.string.name_eviltwin),
             type = CharType.MINION,
             icon = R.drawable.icon_eviltwin,
-            ability = "You & an opposing player know each other. If the good player is executed, evil wins. Good can't win if you both live."
+            ability = TextValue.Resource(R.string.ability_eviltwin)
         ),
         "fearmonger" to Character(
             id = "fearmonger",
-            name = "Fearmonger",
+            name = TextValue.Resource(R.string.name_fearmonger),
             type = CharType.MINION,
             icon = R.drawable.icon_fearmonger,
-            ability = "Each night, choose a player: if you nominate & execute them, their team loses. All players know if you choose a new player."
+            ability = TextValue.Resource(R.string.ability_fearmonger)
         ),
         "goblin" to Character(
             id = "goblin",
-            name = "Goblin",
+            name = TextValue.Resource(R.string.name_goblin),
             type = CharType.MINION,
             icon = R.drawable.icon_goblin,
-            ability = "If you publicly claim to be the Goblin when nominated & are executed that day, your team wins."
+            ability = TextValue.Resource(R.string.ability_goblin)
         ),
         "godfather" to Character(
             id = "godfather",
-            name = "Godfather",
+            name = TextValue.Resource(R.string.name_godfather),
             type = CharType.MINION,
             icon = R.drawable.icon_godfather,
             hardJinxedWith = listOf("heretic"),
-            ability = "You start knowing which Outsiders are in play. If 1 died today, choose a player tonight: they die. [-1 or +1 Outsider]",
+            ability = TextValue.Resource(R.string.ability_godfather),
             additiveModifiers = listOf(Count(townsfolk = -1, outsider = 1), Count(townsfolk = 1, outsider = -1))
         ),
         "harpy" to Character(
             id = "harpy",
-            name = "Harpy",
+            name = TextValue.Resource(R.string.name_harpy),
             type = CharType.MINION,
             icon = R.drawable.icon_harpy,
-            ability = "Each night, choose 2 players: tomorrow, the 1st player is mad that the 2nd is evil, or one or both might die."
+            ability = TextValue.Resource(R.string.ability_harpy)
         ),
         "marionette" to Character(
             id = "marionette",
-            name = "Marionette",
+            name = TextValue.Resource(R.string.name_marionette),
             type = CharType.MINION,
             icon = R.drawable.icon_marionette,
-            ability = "You think you are a good character, but you are not. The Demon knows who you are. [You neighbor the Demon]",
+            ability = TextValue.Resource(R.string.ability_marionette),
             thinksTheyAre = listOf(CharType.TOWNSFOLK, CharType.OUTSIDER)
         ),
         "mastermind" to Character(
             id = "mastermind",
-            name = "Mastermind",
+            name = TextValue.Resource(R.string.name_mastermind),
             type = CharType.MINION,
             icon = R.drawable.icon_mastermind,
-            ability = "If the Demon dies by execution (ending the game), play for 1 more day. If a player is then executed, their team loses."
+            ability = TextValue.Resource(R.string.ability_mastermind)
         ),
         "mezepheles" to Character(
             id = "mezepheles",
-            name = "Mezepheles",
+            name = TextValue.Resource(R.string.name_mezepheles),
             type = CharType.MINION,
             icon = R.drawable.icon_mezepheles,
-            ability = "You start knowing a secret word. The 1st good player to say this word becomes evil that night."
+            ability = TextValue.Resource(R.string.ability_mezepheles)
         ),
         "organgrinder" to Character(
             id = "organgrinder",
-            name = "Organ Grinder",
+            name = TextValue.Resource(R.string.name_organgrinder),
             type = CharType.MINION,
             icon = R.drawable.icon_organgrinder,
-            ability = "All players keep their eyes closed when voting and the vote tally is secret. Each night, choose if you are drunk until dusk."
+            ability = TextValue.Resource(R.string.ability_organgrinder)
         ),
         "pithag" to Character(
             id = "pithag",
-            name = "Pit-Hag",
+            name = TextValue.Resource(R.string.name_pithag),
             type = CharType.MINION,
             icon = R.drawable.icon_pithag,
             hardJinxedWith = listOf("heretic"),
-            ability = "Each night*, choose a player & a character they become (if not in play). If a Demon is made, deaths tonight are arbitrary."
+            ability = TextValue.Resource(R.string.ability_pithag)
         ),
         "poisoner" to Character(
             id = "poisoner",
-            name = "Poisoner",
+            name = TextValue.Resource(R.string.name_poisoner),
             type = CharType.MINION,
             icon = R.drawable.icon_poisoner,
-            ability = "Each night, choose a player: they are poisoned tonight and tomorrow day."
+            ability = TextValue.Resource(R.string.ability_poisoner)
         ),
         "psychopath" to Character(
             id = "psychopath",
-            name = "Psychopath",
+            name = TextValue.Resource(R.string.name_psychopath),
             type = CharType.MINION,
             icon = R.drawable.icon_psychopath,
-            ability = "Each day, before nominations, you may publicly choose a player: they die. If executed, you only die if you lose roshambo."
+            ability = TextValue.Resource(R.string.ability_psychopath)
         ),
         "scarletwoman" to Character(
             id = "scarletwoman",
-            name = "Scarlet Woman",
+            name = TextValue.Resource(R.string.name_scarletwoman),
             type = CharType.MINION,
             icon = R.drawable.icon_scarletwoman,
-            ability = "If there are 5 or more players alive & the Demon dies, you become the Demon. (Travellers don't count.)"
+            ability = TextValue.Resource(R.string.ability_scarletwoman)
         ),
         "spy" to Character(
             id = "spy",
-            name = "Spy",
+            name = TextValue.Resource(R.string.name_spy),
             type = CharType.MINION,
             icon = R.drawable.icon_spy,
             hardJinxedWith = listOf("heretic"),
-            ability = "Each night, you see the Grimoire. You might register as good & as a Townsfolk or Outsider, even if dead."
+            ability = TextValue.Resource(R.string.ability_spy)
         ),
         "summoner" to Character(
             id = "summoner",
-            name = "Summoner",
+            name = TextValue.Resource(R.string.name_summoner),
             type = CharType.MINION,
             icon = R.drawable.icon_summoner,
-            ability = "You get 3 bluffs. On the 3rd night, choose a player: they become an evil Demon of your choice. [No Demon]",
+            ability = TextValue.Resource(R.string.ability_summoner),
             additiveModifiers = listOf(Count(townsfolk = 1, demon = -1))
         ),
         "vizier" to Character(
             id = "vizier",
-            name = "Vizier",
+            name = TextValue.Resource(R.string.name_vizier),
             type = CharType.MINION,
             icon = R.drawable.icon_vizier,
-            ability = "All players know you are the Vizier. You cannot die during the day. If good voted, you may choose to execute immediately."
+            ability = TextValue.Resource(R.string.ability_vizier)
         ),
         "widow" to Character(
             id = "widow",
-            name = "Widow",
+            name = TextValue.Resource(R.string.name_widow),
             type = CharType.MINION,
             icon = R.drawable.icon_widow,
             hardJinxedWith = listOf("heretic"),
-            ability = "On your 1st night, look at the Grimoire & choose a player: they are poisoned. 1 good player knows a Widow is in play."
+            ability = TextValue.Resource(R.string.ability_widow)
         ),
         "witch" to Character(
             id = "witch",
-            name = "Witch",
+            name = TextValue.Resource(R.string.name_witch),
             type = CharType.MINION,
             icon = R.drawable.icon_witch,
-            ability = "Each night, choose a player: if they nominate tomorrow, they die. If just 3 players live, you lose this ability."
+            ability = TextValue.Resource(R.string.ability_witch)
         ),
         "wizard" to Character(
             id = "wizard",
-            name = "Wizard",
+            name = TextValue.Resource(R.string.name_wizard),
             type = CharType.MINION,
             icon = R.drawable.icon_wizard,
-            ability = "Once per game, choose to make a wish. If granted, it might have a price & leave a clue as to its nature."
+            ability = TextValue.Resource(R.string.ability_wizard)
         ),
         "wraith" to Character(
             id = "wraith",
-            name = "Wraith",
+            name = TextValue.Resource(R.string.name_wraith),
             type = CharType.MINION,
             icon = R.drawable.icon_wraith,
-            ability = "You may choose to open your eyes at night. You wake when other evil players do."
+            ability = TextValue.Resource(R.string.ability_wraith)
         ),
         "xaan" to Character(
             id = "xaan",
-            name = "Xaan",
+            name = TextValue.Resource(R.string.name_xaan),
             type = CharType.MINION,
             icon = R.drawable.icon_xaan,
-            ability = "On night X, all Townsfolk are poisoned until dusk. [X Outsiders]",
+            ability = TextValue.Resource(R.string.ability_xaan),
             additiveModifiers = listOf(
                 Count(townsfolk = 4, outsider = -4),
                 Count(townsfolk = 3, outsider = -3),
@@ -871,144 +872,448 @@ object CharacterRepository {
         // DEMONS //
         "alhadikhia" to Character(
             id = "alhadikhia",
-            name = "Al-Hadikhia",
+            name = TextValue.Resource(R.string.name_alhadikhia),
             type = CharType.DEMON,
             icon = R.drawable.icon_alhadikhia,
-            ability = "Each night*, you may choose 3 players (all players learn who): each silently chooses to live or die, but if all live, all die."
+            ability = TextValue.Resource(R.string.ability_alhadikhia)
         ),
         "fanggu" to Character(
             id = "fanggu",
-            name = "Fang Gu",
+            name = TextValue.Resource(R.string.name_fanggu),
             type = CharType.DEMON,
             icon = R.drawable.icon_fanggu,
-            ability = "Each night*, choose a player: they die. The 1st Outsider this kills becomes an evil Fang Gu & you die instead. [+1 Outsider]",
+            ability = TextValue.Resource(R.string.ability_fanggu),
             additiveModifiers = listOf(Count(townsfolk = -1, outsider = 1))
         ),
         "imp" to Character(
             id = "imp",
-            name = "Imp",
+            name = TextValue.Resource(R.string.name_imp),
             type = CharType.DEMON,
             icon = R.drawable.icon_imp,
-            ability = "Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp."
+            ability = TextValue.Resource(R.string.ability_imp)
         ),
         "kazali" to Character(
             id = "kazali",
-            name = "Kazali",
+            name = TextValue.Resource(R.string.name_kazali),
             type = CharType.DEMON,
             icon = R.drawable.icon_kazali,
-            ability = "Each night*, choose a player: they die. [You choose which players are which Minions. -? to +? Outsiders]",
+            ability = TextValue.Resource(R.string.ability_kazali),
             overrideModifiers = listOf(CharType.MINION)
         ),
         "legion" to Character(
             id = "legion",
-            name = "Legion",
+            name = TextValue.Resource(R.string.name_legion),
             type = CharType.DEMON,
             icon = R.drawable.icon_legion,
             maxInstances = 15,
-            ability = "Each night*, a player might die. Executions fail if only evil voted. You register as a Minion too. [Most players are Legion]",
+            ability = TextValue.Resource(R.string.ability_legion),
             overrideModifiers = listOf(CharType.MINION)
         ),
         "leviathan" to Character(
             id = "leviathan",
-            name = "Leviathan",
+            name = TextValue.Resource(R.string.name_leviathan),
             type = CharType.DEMON,
             icon = R.drawable.icon_leviathan,
-            ability = "If more than 1 good player is executed, evil wins. All players know you are in play. After day 5, evil wins."
+            ability = TextValue.Resource(R.string.ability_leviathan)
         ),
         "lilmonsta" to Character(
             id = "lilmonsta",
-            name = "Lil' Monsta",
+            name = TextValue.Resource(R.string.name_lilmonsta),
             type = CharType.DEMON,
             icon = R.drawable.icon_lilmonsta,
-            ability = "Each night, Minions choose who babysits Lil' Monsta & \"is the Demon\". Each night*, a player might die. [+1 Minion]",
+            ability = TextValue.Resource(R.string.ability_lilmonsta),
             additiveModifiers = listOf(Count(minion = 1, demon = -1))
         ),
         "lleech" to Character(
             id = "lleech",
-            name = "Lleech",
+            name = TextValue.Resource(R.string.name_lleech),
             type = CharType.DEMON,
             icon = R.drawable.icon_lleech,
             hardJinxedWith = listOf("heretic"),
-            ability = "Each night*, choose a player: they die. You start by choosing a player: they are poisoned. You die if & only if they are dead."
+            ability = TextValue.Resource(R.string.ability_lleech)
         ),
         "lordoftyphon" to Character(
             id = "lordoftyphon",
-            name = "Lord of Typhon",
+            name = TextValue.Resource(R.string.name_lordoftyphon),
             type = CharType.DEMON,
             icon = R.drawable.icon_lordoftyphon,
-            ability = "Each night*, choose a player: they die. [Evil characters are in a line. You are in the middle. +1 Minion. -? to +? Outsiders]",
+            ability = TextValue.Resource(R.string.ability_lordoftyphon),
             overrideModifiers = listOf(CharType.MINION)
         ),
         "nodashii" to Character(
             id = "nodashii",
-            name = "No Dashii",
+            name = TextValue.Resource(R.string.name_nodashii),
             type = CharType.DEMON,
             icon = R.drawable.icon_nodashii,
-            ability = "Each night*, choose a player: they die. Your 2 Townsfolk neighbors are poisoned."
+            ability = TextValue.Resource(R.string.ability_nodashii)
         ),
         "ojo" to Character(
             id = "ojo",
-            name = "Ojo",
+            name = TextValue.Resource(R.string.name_ojo),
             type = CharType.DEMON,
             icon = R.drawable.icon_ojo,
-            ability = "Each night*, choose a character: they die. If they are not in play, the Storyteller chooses who dies."
+            ability = TextValue.Resource(R.string.ability_ojo)
         ),
         "po" to Character(
             id = "po",
-            name = "Po",
+            name = TextValue.Resource(R.string.name_po),
             type = CharType.DEMON,
             icon = R.drawable.icon_po,
-            ability = "Each night*, you may choose a player: they die. If your last choice was no-one, choose 3 players tonight."
+            ability = TextValue.Resource(R.string.ability_po)
         ),
         "pukka" to Character(
             id = "pukka",
-            name = "Pukka",
+            name = TextValue.Resource(R.string.name_pukka),
             type = CharType.DEMON,
             icon = R.drawable.icon_pukka,
-            ability = "Each night, choose a player: they are poisoned. The previously poisoned player dies then becomes healthy."
+            ability = TextValue.Resource(R.string.ability_pukka)
         ),
         "riot" to Character(
             id = "riot",
-            name = "Riot",
+            name = TextValue.Resource(R.string.name_riot),
             type = CharType.DEMON,
             icon = R.drawable.icon_riot,
-            ability = "On day 3, Minions become Riot & nominees die but nominate an alive player immediately. This must happen."
+            ability = TextValue.Resource(R.string.ability_riot)
         ),
         "shabaloth" to Character(
             id = "shabaloth",
-            name = "Shabaloth",
+            name = TextValue.Resource(R.string.name_shabaloth),
             type = CharType.DEMON,
             icon = R.drawable.icon_shabaloth,
-            ability = "Each night*, choose 2 players: they die. A dead player you chose last night might be regurgitated."
+            ability = TextValue.Resource(R.string.ability_shabaloth)
         ),
         "vigormortis" to Character(
             id = "vigormortis",
-            name = "Vigormortis",
+            name = TextValue.Resource(R.string.name_vigormortis),
             type = CharType.DEMON,
             icon = R.drawable.icon_vigormortis,
-            ability = "Each night*, choose a player: they die. Minions you kill keep their ability & poison 1 Townsfolk neighbor. [-1 Outsider]",
+            ability = TextValue.Resource(R.string.ability_vigormortis),
             additiveModifiers = listOf(Count(townsfolk = 1, outsider = -1))
         ),
         "vortox" to Character(
             id = "vortox",
-            name = "Vortox",
+            name = TextValue.Resource(R.string.name_vortox),
             type = CharType.DEMON,
             icon = R.drawable.icon_vortox,
-            ability = "Each night*, choose a player: they die. Townsfolk abilities yield false info. Each day, if no-one is executed, evil wins."
+            ability = TextValue.Resource(R.string.ability_vortox)
         ),
         "yaggababble" to Character(
             id = "yaggababble",
-            name = "Yaggababble",
+            name = TextValue.Resource(R.string.name_yaggababble),
             type = CharType.DEMON,
             icon = R.drawable.icon_yaggababble,
-            ability = "You start knowing a secret phrase. For each time you said it publicly today, a player might die."
+            ability = TextValue.Resource(R.string.ability_yaggababble)
         ),
         "zombuul" to Character(
             id = "zombuul",
-            name = "Zombuul",
+            name = TextValue.Resource(R.string.name_zombuul),
             type = CharType.DEMON,
             icon = R.drawable.icon_zombuul,
-            ability = "Each night*, if no-one died today, choose a player: they die. The 1st time you die, you live but register as dead."
+            ability = TextValue.Resource(R.string.ability_zombuul)
+        ),
+        // FABLED //
+        "angel" to Character(
+            id = "angel",
+            name = TextValue.Resource(R.string.name_angel),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_angel,
+            ability = TextValue.Resource(R.string.ability_angel)
+        ),
+        "buddhist" to Character(
+            id = "buddhist",
+            name = TextValue.Resource(R.string.name_buddhist),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_buddhist,
+            ability = TextValue.Resource(R.string.ability_buddhist)
+        ),
+        "deusexfiasco" to Character(
+            id = "deusexfiasco",
+            name = TextValue.Resource(R.string.name_deusexfiasco),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_deusexfiasco,
+            ability = TextValue.Resource(R.string.ability_deusexfiasco)
+        ),
+        "djinn" to Character(
+            id = "djinn",
+            name = TextValue.Resource(R.string.name_djinn),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_djinn,
+            ability = TextValue.Resource(R.string.ability_djinn)
+        ),
+        "doomsayer" to Character(
+            id = "doomsayer",
+            name = TextValue.Resource(R.string.name_doomsayer),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_doomsayer,
+            ability = TextValue.Resource(R.string.ability_doomsayer)
+        ),
+        "duchess" to Character(
+            id = "duchess",
+            name = TextValue.Resource(R.string.name_duchess),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_duchess,
+            ability = TextValue.Resource(R.string.ability_duchess)
+        ),
+        "ferryman" to Character(
+            id = "ferryman",
+            name = TextValue.Resource(R.string.name_ferryman),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_ferryman,
+            ability = TextValue.Resource(R.string.ability_ferryman)
+        ),
+        "fibbin" to Character(
+            id = "fibbin",
+            name = TextValue.Resource(R.string.name_fibbin),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_fibbin,
+            ability = TextValue.Resource(R.string.ability_fibbin)
+        ),
+        "fiddler" to Character(
+            id = "fiddler",
+            name = TextValue.Resource(R.string.name_fiddler),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_fiddler,
+            ability = TextValue.Resource(R.string.ability_fiddler)
+        ),
+        "hellslibrarian" to Character(
+            id = "hellslibrarian",
+            name = TextValue.Resource(R.string.name_hellslibrarian),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_hellslibrarian,
+            ability = TextValue.Resource(R.string.ability_hellslibrarian)
+        ),
+        "revolutionary" to Character(
+            id = "revolutionary",
+            name = TextValue.Resource(R.string.name_revolutionary),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_revolutionary,
+            ability = TextValue.Resource(R.string.ability_revolutionary)
+        ),
+        "sentinel" to Character(
+            id = "sentinel",
+            name = TextValue.Resource(R.string.name_sentinel),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_sentinel,
+            ability = TextValue.Resource(R.string.ability_sentinel)
+        ),
+        "spiritofivory" to Character(
+            id = "spiritofivory",
+            name = TextValue.Resource(R.string.name_spiritofivory),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_spiritofivory,
+            ability = TextValue.Resource(R.string.ability_spiritofivory)
+        ),
+        "toymaker" to Character(
+            id = "toymaker",
+            name = TextValue.Resource(R.string.name_toymaker),
+            type = CharType.FABLED,
+            icon = R.drawable.icon_toymaker,
+            ability = TextValue.Resource(R.string.ability_toymaker)
+        ),
+        // LORIC //
+        "bigwig" to Character(
+            id = "bigwig",
+            name = TextValue.Resource(R.string.name_bigwig),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_big_wig,
+            ability = TextValue.Resource(R.string.ability_bigwig)
+        ),
+        "bootlegger" to Character(
+            id = "bootlegger",
+            name = TextValue.Resource(R.string.name_bootlegger),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_bootlegger,
+            ability = TextValue.Resource(R.string.ability_bootlegger)
+        ),
+        "gardener" to Character(
+            id = "gardener",
+            name = TextValue.Resource(R.string.name_gardener),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_gardener,
+            ability = TextValue.Resource(R.string.ability_gardener)
+        ),
+        "godofug" to Character(
+            id = "godofug",
+            name = TextValue.Resource(R.string.name_godofug),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_godofug,
+            ability = TextValue.Resource(R.string.ability_godofug)
+        ),
+        "hindu" to Character(
+            id = "hindu",
+            name = TextValue.Resource(R.string.name_hindu),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_hindu,
+            ability = TextValue.Resource(R.string.ability_hindu)
+        ),
+        "knaves" to Character(
+            id = "knaves",
+            name = TextValue.Resource(R.string.name_knaves),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_knaves,
+            ability = TextValue.Resource(R.string.ability_knaves)
+        ),
+        "pope" to Character(
+            id = "pope",
+            name = TextValue.Resource(R.string.name_pope),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_pope,
+            ability = TextValue.Resource(R.string.ability_pope)
+        ),
+        "stormcatcher" to Character(
+            id = "stormcatcher",
+            name = TextValue.Resource(R.string.name_stormcatcher),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_stormcatcher,
+            ability = TextValue.Resource(R.string.ability_stormcatcher)
+        ),
+        "tor" to Character(
+            id = "tor",
+            name = TextValue.Resource(R.string.name_tor),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_tor,
+            ability = TextValue.Resource(R.string.ability_tor)
+        ),
+        "ventriloquist" to Character(
+            id = "ventriloquist",
+            name = TextValue.Resource(R.string.name_ventriloquist),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_ventriloquist,
+            ability = TextValue.Resource(R.string.ability_ventriloquist)
+        ),
+        "zenomancer" to Character(
+            id = "zenomancer",
+            name = TextValue.Resource(R.string.name_zenomancer),
+            type = CharType.LORIC,
+            icon = R.drawable.icon_zenomancer,
+            ability = TextValue.Resource(R.string.ability_zenomancer)
+        ),
+        // TRAVELLERS //
+        "apprentice" to Character(
+            id = "apprentice",
+            name = TextValue.Resource(R.string.name_apprentice),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_apprentice,
+            ability = TextValue.Resource(R.string.ability_apprentice)
+        ),
+        "barista" to Character(
+            id = "barista",
+            name = TextValue.Resource(R.string.name_barista),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_barista,
+            ability = TextValue.Resource(R.string.ability_barista)
+        ),
+        "beggar" to Character(
+            id = "beggar",
+            name = TextValue.Resource(R.string.name_beggar),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_beggar,
+            ability = TextValue.Resource(R.string.ability_beggar)
+        ),
+        "bishop" to Character(
+            id = "bishop",
+            name = TextValue.Resource(R.string.name_bishop),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_bishop,
+            ability = TextValue.Resource(R.string.ability_bishop)
+        ),
+        "bonecollector" to Character(
+            id = "bonecollector",
+            name = TextValue.Resource(R.string.name_bonecollector),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_bonecollector,
+            ability = TextValue.Resource(R.string.ability_bonecollector)
+        ),
+        "bureaucrat" to Character(
+            id = "bureaucrat",
+            name = TextValue.Resource(R.string.name_bureaucrat),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_bureaucrat,
+            ability = TextValue.Resource(R.string.ability_bureaucrat)
+        ),
+        "butcher" to Character(
+            id = "butcher",
+            name = TextValue.Resource(R.string.name_butcher),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_butcher,
+            ability = TextValue.Resource(R.string.ability_butcher)
+        ),
+        "cacklejack" to Character(
+            id = "cacklejack",
+            name = TextValue.Resource(R.string.name_cacklejack),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_cacklejack,
+            ability = TextValue.Resource(R.string.ability_cacklejack)
+        ),
+        "deviant" to Character(
+            id = "deviant",
+            name = TextValue.Resource(R.string.name_deviant),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_deviant,
+            ability = TextValue.Resource(R.string.ability_deviant)
+        ),
+        "gangster" to Character(
+            id = "gangster",
+            name = TextValue.Resource(R.string.name_gangster),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_gangster,
+            ability = TextValue.Resource(R.string.ability_gangster)
+        ),
+        "gnome" to Character(
+            id = "gnome",
+            name = TextValue.Resource(R.string.name_gnome),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_gnome,
+            ability = TextValue.Resource(R.string.ability_gnome)
+        ),
+        "gunslinger" to Character(
+            id = "gunslinger",
+            name = TextValue.Resource(R.string.name_gunslinger),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_gunslinger,
+            ability = TextValue.Resource(R.string.ability_gunslinger)
+        ),
+        "harlot" to Character(
+            id = "harlot",
+            name = TextValue.Resource(R.string.name_harlot),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_harlot,
+            ability = TextValue.Resource(R.string.ability_harlot)
+        ),
+        "judge" to Character(
+            id = "judge",
+            name = TextValue.Resource(R.string.name_judge),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_judge,
+            ability = TextValue.Resource(R.string.ability_judge)
+        ),
+        "matron" to Character(
+            id = "matron",
+            name = TextValue.Resource(R.string.name_matron),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_matron,
+            ability = TextValue.Resource(R.string.ability_matron)
+        ),
+        "scapegoat" to Character(
+            id = "scapegoat",
+            name = TextValue.Resource(R.string.name_scapegoat),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_scapegoat,
+            ability = TextValue.Resource(R.string.ability_scapegoat)
+        ),
+        "thief" to Character(
+            id = "thief",
+            name = TextValue.Resource(R.string.name_thief),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_thief,
+            ability = TextValue.Resource(R.string.ability_thief)
+        ),
+        "voudon" to Character(
+            id = "voudon",
+            name = TextValue.Resource(R.string.name_voudon),
+            type = CharType.TRAVELLER,
+            icon = R.drawable.icon_voudon,
+            ability = TextValue.Resource(R.string.ability_voudon)
         )
     )
 

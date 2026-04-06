@@ -1,5 +1,6 @@
 package com.example.clockplucker.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -29,16 +30,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.clockplucker.MainViewModel
 import com.example.clockplucker.NavigationBar
+import com.example.clockplucker.R
 import com.example.clockplucker.SectionHeader
 import com.example.clockplucker.SelectedModes
 import com.example.clockplucker.data.CharAlignment
@@ -59,6 +60,7 @@ import com.example.clockplucker.ui.theme.GoodPrimary
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CharacterConfirmationScreen(
     onBack: () -> Unit,
@@ -68,18 +70,10 @@ fun CharacterConfirmationScreen(
 ) {
     val script = viewModel.loadedScript ?: return
     val player = viewModel.players[playerIndex]
+    
+    val selectableCharacters = script.selectableCharacters
 
-    // Saver to handle saving/restoring the list of selected characters
-    val characterListSaver = listSaver<MutableList<Character>, String>(
-        save = { list -> list.map { it.id } },
-        restore = { ids -> 
-            mutableStateListOf<Character>().apply {
-                addAll(ids.mapNotNull { id -> script.characters.find { it.id == id } })
-            }
-        }
-    )
-
-    val selectedCharacters = rememberSaveable(playerIndex, saver = characterListSaver) {
+    val selectedCharacters = remember(playerIndex) {
         mutableStateListOf<Character>().apply {
             addAll(player.selectedChars)
         }
@@ -90,14 +84,23 @@ fun CharacterConfirmationScreen(
         viewModel.updatePlayer(playerIndex, player.copy(selectedChars = selectedCharacters.toList()))
     }
 
+    // todo: annotatedRestrictionsText is being reset on screen navigation because selectedCharacters.size goes to 0, fix somehow?
     val labelSmallStyle = MaterialTheme.typography.labelSmall.toSpanStyle()
-    val annotatedRestrictionsText = remember(selectedCharacters.size, viewModel.selectedMode, viewModel.alignmentN, viewModel.typeN, script) {
+    val context = LocalContext.current
+    val annotatedRestrictionsText = remember(
+        selectedCharacters.size,
+        viewModel.selectedMode,
+        viewModel.alignmentN,
+        viewModel.typeN,
+        selectableCharacters,
+        context
+    ) {
         buildAnnotatedString {
             when (viewModel.selectedMode) {
-                SelectedModes.NO_RESTRICTIONS -> append("You may select any number of characters.")
+                SelectedModes.NO_RESTRICTIONS -> append(context.getString(R.string.mode_no_restrictions_player_desc))
                 SelectedModes.ALIGNMENT -> {
-                    val goodInScript = script.characters.count { it.alignment == CharAlignment.GOOD }
-                    val evilInScript = script.characters.count { it.alignment == CharAlignment.EVIL }
+                    val goodInScript = selectableCharacters.count { it.alignment == CharAlignment.GOOD }
+                    val evilInScript = selectableCharacters.count { it.alignment == CharAlignment.EVIL }
                     val goodLimit = minOf(viewModel.alignmentN, goodInScript)
                     val evilLimit = minOf(viewModel.alignmentN, evilInScript)
 
@@ -106,31 +109,33 @@ fun CharacterConfirmationScreen(
                     val goodRemaining = maxOf(0, goodLimit - goodCount)
                     val evilRemaining = maxOf(0, evilLimit - evilCount)
 
-                    append("You may select ")
+                    append(context.getString(R.string.you_may_select))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
                         append("$goodRemaining")
                     }
-                    append(" more ")
+                    append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
-                        append("GOOD")
+                        append(context.getString(R.string.good))
                     }
-                    append(" and ")
+                    append(context.getString(R.string.and))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
                         append("$evilRemaining")
                     }
-                    append(" more ")
+                    append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append("EVIL")
+                        append(context.getString(R.string.evil))
                     }
-                    append(" character")
-                    if (goodRemaining != 1 || evilRemaining != 1) append("s")
-                    append(".")
+                    append(
+                        context.getString(
+                            R.string.character_s,
+                            if (goodRemaining != 1 || evilRemaining != 1) "s" else ""
+                        ))
                 }
                 SelectedModes.TYPE -> {
-                    val tInScript = script.characters.count { it.type == CharType.TOWNSFOLK }
-                    val oInScript = script.characters.count { it.type == CharType.OUTSIDER }
-                    val mInScript = script.characters.count { it.type == CharType.MINION }
-                    val dInScript = script.characters.count { it.type == CharType.DEMON }
+                    val tInScript = selectableCharacters.count { it.type == CharType.TOWNSFOLK }
+                    val oInScript = selectableCharacters.count { it.type == CharType.OUTSIDER }
+                    val mInScript = selectableCharacters.count { it.type == CharType.MINION }
+                    val dInScript = selectableCharacters.count { it.type == CharType.DEMON }
 
                     val tLimit = minOf(viewModel.typeN, tInScript)
                     val oLimit = minOf(viewModel.typeN, oInScript)
@@ -147,53 +152,61 @@ fun CharacterConfirmationScreen(
                     val mRemaining = maxOf(0, mLimit - mCount)
                     val dRemaining = maxOf(0, dLimit - dCount)
 
-                    append("You may select ")
+                    append(context.getString(R.string.you_may_select))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
                         append("$tRemaining")
                     }
-                    append(" more ")
+                    append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
-                        append("TOWNSFOLK")
+                        append(context.getString(R.string.townsfolk))
                     }
                     append(", ")
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
                         append("$oRemaining")
                     }
-                    append(" more ")
+                    append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
-                        append("OUTSIDER")
-                        if (oRemaining != 1) append("S")
+                        append(context.getString(R.string.outsider_s),
+                            if (oRemaining != 1) "S" else ""
+                        )
                     }
                     append(", ")
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
                         append("$mRemaining")
                     }
-                    append(" more ")
+                    append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append("MINION")
-                        if (mRemaining != 1) append("S")
+                        append(context.getString(R.string.minion_s),
+                            if (mRemaining != 1) "S" else ""
+                        )
                     }
-                    append(", and ")
+                    append("," + context.getString(R.string.and))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
                         append("$dRemaining")
                     }
-                    append(" more ")
+                    append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append("DEMON")
-                        if (dRemaining != 1) append("S")
+                        append(context.getString(R.string.demon_s),
+                            if (dRemaining != 1) "S" else ""
+                        )
                     }
                     append(".")
                 }
             }
+            append(context.getString(R.string.you_will_be_able_to_review_your_selection))
         }
     }
 
-    val confirmationText = remember(annotatedRestrictionsText, viewModel.playerPriorityToggle) {
+    val confirmationText = remember(
+        annotatedRestrictionsText,
+        viewModel.playerPriorityToggle,
+        context
+    ) {
         buildAnnotatedString {
-            append("Are you sure about your character selections? ")
+            append(context.getString(R.string.character_confirmation_confirmation))
             append(annotatedRestrictionsText)
             if (viewModel.playerPriorityToggle) {
-                append(" You may rearrange your selected characters in order of preference.")
+                append(context.getString(R.string.player_priority_player_desc))
             }
         }
     }
@@ -230,7 +243,7 @@ fun CharacterConfirmationScreen(
                 .padding(innerPadding)
         ) {
             SectionHeader(
-                text = "SELECTION CONFIRMATION",
+                text = stringResource(R.string.selection_confirmation),
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
             Text(
@@ -252,7 +265,7 @@ fun CharacterConfirmationScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Most Preferred",
+                        text = stringResource(R.string.most_preferred),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 12.dp, bottom = 8.dp)
                     )
@@ -311,7 +324,7 @@ fun CharacterConfirmationScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                     Text(
-                        text = "Least Preferred",
+                        text = stringResource(R.string.least_preferred),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
@@ -329,20 +342,8 @@ fun CharacterConfirmRow(
     reorderable: Boolean = false,
     onRemove: () -> Unit
 ) {
-    val abilityText = remember(character.ability) {
-        buildAnnotatedString {
-            val regex = Regex("\\[.*?]")
-            var lastIndex = 0
-            regex.findAll(character.ability).forEach { matchResult ->
-                append(character.ability.substring(lastIndex, matchResult.range.first))
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                    append(matchResult.value)
-                }
-                lastIndex = matchResult.range.last + 1
-            }
-            append(character.ability.substring(lastIndex))
-        }
-    }
+    val name = character.name.asString()
+    val ability = character.ability.asString()
 
     val nameColor = remember(character.alignment) {
         if (character.alignment == CharAlignment.GOOD) GoodPrimary else EvilPrimary
@@ -371,44 +372,33 @@ fun CharacterConfirmRow(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.List,
-                        contentDescription = "Drag Handle"
+                        contentDescription = stringResource(R.string.drag_handle)
                     )
                 }
             }
 
-            if (character.icon != 0) {
-                Image(
-                    painter = painterResource(id = character.icon),
-                    contentDescription = character.name,
-                    modifier = Modifier
-                        .size(108.dp)
-                        .aspectRatio(1f)
-                        .padding(end = 8.dp)
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(108.dp)
-                        .padding(end = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("?")
-                }
-            }
+            Image(
+                painter = painterResource(id = character.icon),
+                contentDescription = name,
+                modifier = Modifier
+                    .size(108.dp)
+                    .aspectRatio(1f)
+                    .padding(end = 8.dp)
+            )
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp)
             ) {
                 Text(
-                    text = character.name,
+                    text = name,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
                     color = nameColor
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = abilityText,
+                    text = ability,
                     style = MaterialTheme.typography.bodySmall,
                     color = abilityColor
                 )
@@ -424,7 +414,7 @@ fun CharacterConfirmRow(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Remove"
+                    contentDescription = stringResource(R.string.remove_character)
                 )
             }
         }

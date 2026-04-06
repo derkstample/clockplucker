@@ -7,12 +7,13 @@ class ScriptLoader {
     /**
      * Parses a JSON string representing a script (either a list of IDs or full character objects).
      */
-    fun parseScript(jsonString: String): Script {
-        val characters = mutableListOf<Character>()
+    fun parseScript(jsonString: String): Script? {
+        val selectableCharacters = mutableListOf<Character>()
+        val excludedCharacters = mutableListOf<Character>()
         var scriptName = "Unknown Script"
         var scriptAuthor = "Unknown Author"
-        var sentinel = false
-        var pope = false
+
+        val excludedTypes = listOf(CharType.FABLED, CharType.LORIC, CharType.TRAVELLER)
 
         try {
             val array = JSONArray(jsonString)
@@ -29,6 +30,18 @@ class ScriptLoader {
                         
                         if (id.isEmpty()) continue
 
+                        // BOTC SCRIPTS SUPPORT
+                        val characterInfo = CharacterRepository.getCharacterInfo(id)
+                        if(characterInfo != null) {
+                            if (characterInfo.type in excludedTypes) {
+                                excludedCharacters.add(characterInfo)
+                            } else {
+                                selectableCharacters.add(characterInfo)
+                            }
+                            continue
+                        }
+
+                        // BOOTLEGGER CHARACTER SUPPORT
                         val name = item.optString("name", formatIdToName(id))
                         val team = item.optString("team", item.optString("roleType", "townsfolk")).lowercase()
                         
@@ -37,27 +50,52 @@ class ScriptLoader {
                             "outsider" -> CharType.OUTSIDER
                             "minion" -> CharType.MINION
                             "demon" -> CharType.DEMON
+                            "fabled" -> CharType.FABLED
+                            "loric" -> CharType.LORIC
+                            "traveller", "traveler" -> CharType.TRAVELLER
                             else -> CharType.TOWNSFOLK
                         }
 
                         val ability = item.optString("ability", "")
-                        
-                        characters.add(Character(id = id,name = name, type = type, icon = 0, ability = ability))
+                        if (ability.isEmpty()) return null // not much use having a custom character if you didn't bother to give it an ability
+                        // that check also gives good enough input validation
+
+                        val character = Character(
+                            id = id,
+                            name = TextValue.Raw(name),
+                            type = type,
+                            ability = TextValue.Raw(ability)
+                        )
+                        if (type in excludedTypes) {
+                            excludedCharacters.add(character)
+                        } else {
+                            selectableCharacters.add(character)
+                        }
                     }
+                    // SCRIPT TOOL JSON SUPPORT
                     is String -> {
-                        if (item == "sentinel") sentinel = true
-                        else if (item == "pope") pope = true
                         val characterInfo = CharacterRepository.getCharacterInfo(item)
                         if(characterInfo != null) {
-                            characters.add(characterInfo)
+                            if (characterInfo.type in excludedTypes) {
+                                excludedCharacters.add(characterInfo)
+                            } else {
+                                selectableCharacters.add(characterInfo)
+                            }
+                        } else {
+                            return null
                         }
                     }
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
+            return null
         }
-        return Script(name = scriptName, author = scriptAuthor, characters = characters, containsSentinel = sentinel, containsPope = pope)
+        return Script(
+            name = scriptName, 
+            author = scriptAuthor, 
+            selectableCharacters = selectableCharacters, 
+            excludedCharacters = excludedCharacters
+        )
     }
 
     private fun formatIdToName(id: String): String {

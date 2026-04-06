@@ -57,6 +57,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -241,7 +242,7 @@ fun HelpButton(onClick: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.Info,
-            contentDescription = "Help",
+            contentDescription = stringResource(R.string.help),
             modifier = Modifier.size(20.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -424,7 +425,7 @@ fun NavigationBar(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         modifier = Modifier.offset(x = backTranslation.value.dp)
                     )
                 }
@@ -473,7 +474,7 @@ fun NavigationBar(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next",
+                        contentDescription = stringResource(R.string.next),
                         modifier = Modifier.offset(x = nextTranslation.value.dp),
                         tint = if (nextEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                     )

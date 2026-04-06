@@ -40,6 +40,24 @@ private val EvilColorScheme = darkColorScheme(
     onSurfaceVariant = EvilPrimary
 )
 
+private val FabledColorScheme = darkColorScheme(
+    primary = FabledPrimary,
+    onPrimary = FabledOnPrimary,
+    primaryContainer = FabledPrimaryContainer,
+    onPrimaryContainer = FabledOnPrimaryContainer,
+    surfaceVariant = FabledPrimaryContainer.copy(alpha = 0.2f),
+    onSurfaceVariant = FabledPrimary
+)
+
+private val LoricColorScheme = darkColorScheme(
+    primary = LoricPrimary,
+    onPrimary = LoricOnPrimary,
+    primaryContainer = LoricPrimaryContainer,
+    onPrimaryContainer = LoricOnPrimaryContainer,
+    surfaceVariant = LoricPrimaryContainer.copy(alpha = 0.2f),
+    onSurfaceVariant = LoricPrimary
+)
+
 private val DisabledColorScheme = darkColorScheme(
     primary = DisabledPrimary,
     onPrimary = DisabledOnPrimary,
@@ -62,6 +80,24 @@ fun GoodTheme(content: @Composable () -> Unit) {
 fun EvilTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = EvilColorScheme,
+        typography = AppTypography,
+        content = content
+    )
+}
+
+@Composable
+fun FabledTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = FabledColorScheme,
+        typography = AppTypography,
+        content = content
+    )
+}
+
+@Composable
+fun LoricTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = LoricColorScheme,
         typography = AppTypography,
         content = content
     )

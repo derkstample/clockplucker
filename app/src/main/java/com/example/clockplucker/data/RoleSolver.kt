@@ -13,7 +13,7 @@ class RoleSolver (
     private val players: List<Player>,
     private val availableChars: List<Character>,
     private val baseCount: Count,
-    private val unselectableChance: Float = 0f,
+    private val surpriseChances: Map<Character, Float> = emptyMap(),
     private val selectedPriority: SelectedPriorities = SelectedPriorities.NO_PRIORITIES,
     private val playerPriorityToggle: Boolean = false,
     private val containsPope: Boolean = false,
@@ -82,9 +82,9 @@ class RoleSolver (
                 // Not a deceiver: Must have NONE reserved
                 validTuples.add(j, NONE)
             } else {
-                // Is a deceiver: Must reserve a valid type
+                // Is a deceiver: Must reserve a valid type that is not also a deceiver
                 for (k in 0 until numChars) {
-                    if (availableChars[k].type in charJ.thinksTheyAre) {
+                    if (availableChars[k].type in charJ.thinksTheyAre && availableChars[k].thinksTheyAre.isEmpty()) {
                         validTuples.add(j, k)
                     }
                 }
@@ -126,10 +126,47 @@ class RoleSolver (
             }
         }
 
-        // 6. Setup Modifiers and Type Counts
+        // 6. Marionette-Demon Indexing Constraint
+        val marionetteIdx = availableChars.indexOfFirst { it.id == "marionette" }
+        val demonIndices = availableChars.indices.filter { availableChars[it].type == CharType.DEMON }
+
+        if (marionetteIdx >= 0) {
+            // Create a boolean variable for each player: "is this player the marionette?"
+            val playerIsMarionette = model.boolVarArray("playerIsMarionette", numPlayers)
+            for (i in 0 until numPlayers) {
+                model.ifOnlyIf(
+                    model.arithm(assignments[i], "=", marionetteIdx),
+                    model.arithm(playerIsMarionette[i], "=", 1)
+                )
+            }
+
+            // Create a boolean variable for each player: "is this player a demon?"
+            val playerIsDemon = model.boolVarArray("playerIsDemon", numPlayers)
+            for (i in 0 until numPlayers) {
+                // A player is a demon if their assignment is one of the demon indices
+                model.ifOnlyIf(
+                    model.member(assignments[i], demonIndices.toIntArray()),
+                    model.arithm(playerIsDemon[i], "=", 1)
+                )
+            }
+
+            // Enforce: If Player I is Marionette, then Player I-1 OR Player I+1 must be Demon
+            for (i in 0 until numPlayers) {
+                val prev = (i + numPlayers - 1) % numPlayers
+                val next = (i + 1) % numPlayers
+
+                // Logical constraint: playerIsMarionette[i] implies (playerIsDemon[prev] OR playerIsDemon[next])
+                model.ifThen(
+                    playerIsMarionette[i],
+                    model.arithm(playerIsDemon[prev], "+", playerIsDemon[next], ">=", 1)
+                )
+            }
+        }
+
+        // 7. Setup Modifiers and Type Counts
         applyTypeCountConstraints(model, realOccurrences, availableChars, numPlayers, baseCount)
 
-        // 7. Objective Function (Maximize Player Preferences)
+        // 8. Objective Function (Maximize Player Preferences)
         val baseScores = model.intVarArray("baseScores", numPlayers, 0, 10000)
         val reserveScores = model.intVarArray("reserveScores", numPlayers, 0, 10000)
         val totalScore = model.intVar("totalScore", 0, 999999)
@@ -142,9 +179,10 @@ class RoleSolver (
         val allScores = baseScores + reserveScores
         model.sum(allScores, "=", totalScore).post()
 
-        // 8. Solve
+        // 9. Solve
         model.setObjective(Model.MAXIMIZE, totalScore)
         val solver = model.solver
+        solver.limitTime("30s") // 30 second time limit, may need to decrease. In most cases, the solver finds an optimal solution within 1s.
 
         var bestAssignment: Map<Player, Pair<Character, Character?>> = emptyMap()
 
@@ -167,26 +205,24 @@ class RoleSolver (
     private fun calculateBaseProfit(player: Player, char: Character): Int {
         var baseProfit = 0
         val selectedPosition = player.selectedChars.indexOf(char)
-        val playerSurpriseChance = if (unselectableChance == 1f) 1f else unselectableChance / (players.size - 1) // By dividing this way, the expected value of each surprise character being applied per solution is equal to unselectableChance
-        // Also, if the surpriseChance is 100%, just use the unselectableChance directly to guarantee an assignment
-        // for some reason, subtracting the player count by 1 gets a better result than dividing by the player count directly
-        // todo: investigate why this is the case
+        val surpriseChance = surpriseChances[char] ?: 0f
+        val playerSurpriseChance = if (surpriseChance == 1f) 1f else surpriseChance / (players.size - 1) // By dividing this way, the expected value of each surprise character being applied per solution is equal to surpriseChance
 
         if (selectedPosition != -1) {
             if (playerPriorityToggle) {
                 val selectedListSize = player.selectedChars.size
-                // (int) (10 * (size - pos) / size) gives 10 baseProfit at position 0, linearly down to 1 baseProfit at the final position
-                baseProfit = (10 * ((1f * selectedListSize - selectedPosition) / selectedPosition)).toInt()
-            } else baseProfit = 10
-            if (selectedPriority == SelectedPriorities.TYPE && player.typePriority == char.type) baseProfit *= 10
-            else if (selectedPriority == SelectedPriorities.ALIGNMENT && player.alignmentPriority == char.alignment) baseProfit *= 10
+                // (int) (100 * (size - pos) / size) gives 100 baseProfit at position 0, linearly down to 1 baseProfit at the final position
+                baseProfit = (100 * ((1f * selectedListSize - selectedPosition) / selectedListSize)).toInt()
+            } else baseProfit = 100
         } else {
             // Handle unselectable chance by injecting random probability into the deterministic solver matrix
             if (!char.thinksTheyAre.isEmpty()) {
-                baseProfit = if (Random.nextFloat() < playerSurpriseChance) 10 // high baseProfit if chance succeeds
-                else -10 // negative baseProfit to cancel out the reserveProfit if chance fails
+                baseProfit = if (Random.nextFloat() < playerSurpriseChance) 150 // high baseProfit if chance succeeds
+                else -150 // negative baseProfit to cancel out the reserveProfit if chance fails
             }
         }
+        if (selectedPriority == SelectedPriorities.TYPE && player.typePriority == char.type) baseProfit += 150 // very high priority if type matches (storyteller gets the final say)
+        else if (selectedPriority == SelectedPriorities.ALIGNMENT && player.alignmentPriority == char.alignment) baseProfit += 150
         return baseProfit * player.historyWeight
     }
 
@@ -197,12 +233,12 @@ class RoleSolver (
         if (selectedPosition != -1) {
             if (playerPriorityToggle) {
                 val selectedListSize = player.selectedChars.size
-                // (int) (10 * (size - pos) / size) gives 10x multiplier at position 0, linearly down to 1x multiplier at the final position
-                reserveProfit = (10 * ((1f * selectedListSize - selectedPosition) / selectedPosition)).toInt()
-            } else reserveProfit = 10
-            if (selectedPriority == SelectedPriorities.TYPE && player.typePriority == char.type) reserveProfit *= 10
-            else if (selectedPriority == SelectedPriorities.ALIGNMENT && player.alignmentPriority == char.alignment) reserveProfit *= 10
+                // (int) (100 * (size - pos) / size) gives 10x multiplier at position 0, linearly down to 1x multiplier at the final position
+                reserveProfit = (100 * ((1f * selectedListSize - selectedPosition) / selectedListSize)).toInt()
+            } else reserveProfit = 100
         }
+        if (selectedPriority == SelectedPriorities.TYPE && player.typePriority == char.type) reserveProfit += 150
+        else if (selectedPriority == SelectedPriorities.ALIGNMENT && player.alignmentPriority == char.alignment) reserveProfit += 150
         return reserveProfit * player.historyWeight
     }
 
@@ -226,6 +262,7 @@ class RoleSolver (
                 CharType.OUTSIDER -> outVars.add(occurrences[index])
                 CharType.MINION -> minVars.add(occurrences[index])
                 CharType.DEMON -> demVars.add(occurrences[index])
+                else -> {}
             }
             if (char.id == "legion") legionIndex = index
         }

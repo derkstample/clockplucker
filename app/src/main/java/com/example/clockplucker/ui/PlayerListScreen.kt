@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -65,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.clockplucker.MainViewModel
 import com.example.clockplucker.NavigationBar
+import com.example.clockplucker.R
 import com.example.clockplucker.SelectedPriorities
 import com.example.clockplucker.data.CharAlignment
 import com.example.clockplucker.data.CharType
@@ -143,7 +145,7 @@ fun PlayerListScreen(
                 .padding(innerPadding)
         ) {
             PlayerCountHeader(
-                text = "PLAYER LIST",
+                text = stringResource(R.string.player_list),
                 modifier = Modifier.padding(horizontal = 16.dp),
                 count = viewModel.players.size,
                 onCountChange = {
@@ -216,7 +218,7 @@ fun PlayerListScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
-                                    contentDescription = "Add Player"
+                                    contentDescription = stringResource(R.string.add_player)
                                 )
                             }
                         }
@@ -265,7 +267,7 @@ fun PlayerCountHeader (
             onClick = { expanded = true },
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
-            Text(text = "COUNT: $count", style = MaterialTheme.typography.labelMedium)
+            Text(text = stringResource(R.string.player_count, count), style = MaterialTheme.typography.labelMedium)
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
@@ -368,7 +370,7 @@ fun PlayerInputRow(
                     verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
-                        text = "Player ${index + 1}",
+                        text = stringResource(R.string.player_index_label, index + 1),
                         style = MaterialTheme.typography.bodySmall,
                         color = rowTheme.labelColor,
                         modifier = Modifier
@@ -378,7 +380,9 @@ fun PlayerInputRow(
                     if (selectedPriority == SelectedPriorities.ALIGNMENT || selectedPriority == SelectedPriorities.TYPE) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (selectedPriority == SelectedPriorities.ALIGNMENT) "Alignment" else "Type",
+                            text = if (selectedPriority == SelectedPriorities.ALIGNMENT) stringResource(
+                                R.string.alignment_s
+                            ) else stringResource(R.string.type_s),
                             style = MaterialTheme.typography.bodySmall,
                             color = rowTheme.labelColor,
                             modifier = Modifier
@@ -405,7 +409,7 @@ fun PlayerInputRow(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.List,
-                            contentDescription = "Drag Handle"
+                            contentDescription = stringResource(R.string.drag_handle)
                         )
                     }
 
@@ -419,7 +423,7 @@ fun PlayerInputRow(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight(),
-                        placeholder = { Text(text = "Enter Name", style = MaterialTheme.typography.bodyMedium, color = rowTheme.contentColor.copy(alpha = 0.7f)) },
+                        placeholder = { Text(text = stringResource(R.string.enter_name), style = MaterialTheme.typography.bodyMedium, color = rowTheme.contentColor.copy(alpha = 0.7f)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Words,
@@ -435,11 +439,13 @@ fun PlayerInputRow(
                     )
 
                     if (showPriority) {
+                        val either = stringResource(R.string.either)
+                        val any = stringResource(R.string.any)
                         PriorityDropdown(
                             selected = if (selectedPriority == SelectedPriorities.ALIGNMENT)
-                                (player.alignmentPriority?.name ?: "EITHER")
+                                (player.alignmentPriority?.name ?: either)
                             else
-                                (player.typePriority?.name ?: "ANY"),
+                                (player.typePriority?.name ?: any),
                             isExpanded = isMenuExpanded,
                             openIndex = index,
                             onOpen = {
@@ -449,17 +455,27 @@ fun PlayerInputRow(
                             onDismiss = onDismissMenu,
                             onSelect = { option ->
                                 if (selectedPriority == SelectedPriorities.ALIGNMENT) {
-                                    val newAlignment = if (option == "EITHER") null else CharAlignment.valueOf(option)
+                                    val newAlignment = if (option == either) null else CharAlignment.valueOf(option)
                                     onPlayerChange(index, player.copy(alignmentPriority = newAlignment, typePriority = null))
                                 } else {
-                                    val newType = if (option == "ANY") null else CharType.valueOf(option)
+                                    val newType = if (option == any) null else CharType.valueOf(option)
                                     onPlayerChange(index, player.copy(typePriority = newType, alignmentPriority = null))
                                 }
                             },
                             options = if (selectedPriority == SelectedPriorities.ALIGNMENT)
-                                listOf("EITHER", "GOOD", "EVIL")
+                                listOf(
+                                    either,
+                                    stringResource(R.string.good),
+                                    stringResource(R.string.evil)
+                                )
                             else
-                                listOf("ANY", "TOWNSFOLK", "OUTSIDER", "MINION", "DEMON"),
+                                listOf(
+                                    any,
+                                    stringResource(R.string.townsfolk),
+                                    stringResource(R.string.outsider_s),
+                                    stringResource(R.string.minion_s),
+                                    stringResource(R.string.demon_s)
+                                ),
                             containerColor = rowTheme.containerColor,
                             contentColor = rowTheme.contentColor,
                             modifier = Modifier
@@ -480,7 +496,7 @@ fun PlayerInputRow(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Delete"
+                            contentDescription = stringResource(R.string.delete)
                         )
                     }
                 }

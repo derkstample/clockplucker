@@ -20,15 +20,15 @@ class RoleSolverTest {
         // 9 Townsfolk, 3 Outsiders, 2 Minions, 1 Demon
         val characters = mutableListOf<Character>()
         (1..9).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..3).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         // 3. Define starting count for 8 players: 5 Townsfolk, 1 Outsider, 1 Minion, 1 Demon
         val startingCount = TypeCountLookup().getBaseCounts(players.size)
@@ -65,15 +65,16 @@ class RoleSolverTest {
         // 1. Create script with 11 characters
         val characters = mutableListOf<Character>()
         (1..6).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
+
         // 2. Setup 6 Players, each with 1 preferred character
         val players = listOf(
             Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0])), // wants t1
@@ -120,14 +121,15 @@ class RoleSolverTest {
         // 1. Create script with 11 characters
         val characters = mutableListOf<Character>()
         (1..6).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("baron", "Baron", CharType.MINION, icon = 0, ability = "", additiveModifiers = listOf(Count(townsfolk = -2, outsider = 2))))
-        characters.add(Character("m2", "Minion 2", CharType.MINION, icon = 0, ability = ""))
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("baron", TextValue.Raw("Baron"), type = CharType.MINION, icon = 0, ability = TextValue.Raw(""), additiveModifiers = listOf(Count(townsfolk = -2, outsider = 2))))
+        characters.add(Character("m2", TextValue.Raw("Minion 2"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
+
         // 2. Setup 5 Players, each with 1 preferred character
         val players = listOf(
             Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0])), // wants t1
@@ -174,15 +176,16 @@ class RoleSolverTest {
         // 1. Create script with 11 characters
         val characters = mutableListOf<Character>()
         (1..6).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
+
         // 2. Setup 5 Players, each with 2 preferred characters
         val players = listOf(
             Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0], characters[9]), typePriority = CharType.MINION), // wants t1 or m2, prioritized to be MINION
@@ -228,15 +231,16 @@ class RoleSolverTest {
         // 1. Create script with 11 characters
         val characters = mutableListOf<Character>()
         (1..6).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
+
         // 2. Setup 5 Players, each with 2 preferred characters
         val players = listOf(
             Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0], characters[9]), alignmentPriority = CharAlignment.EVIL), // wants t1, prioritized to be EVIL
@@ -276,18 +280,79 @@ class RoleSolverTest {
     }
 
     @Test
+    fun testRoleSolverMaximumSatisfactionWithSurprise() = runBlocking {
+        // 1. Create script with 11 characters
+        val characters = mutableListOf<Character>()
+        (1..6).forEach { i ->
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
+        }
+        characters.add(Character("o1", TextValue.Raw("Outsider 1"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
+        val drunk = Character("drunk", TextValue.Raw("Drunk"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw(""), thinksTheyAre = listOf(CharType.TOWNSFOLK))
+        characters.add(drunk)
+        (1..2).forEach { i ->
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
+        }
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
+
+        // 2. Setup 6 Players, each with 2 preferred characters
+        val players = listOf(
+            Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0], characters[8])), // wants t1 or m1
+            Player(id = UUID.randomUUID(), name = "Player 2", selectedChars = listOf(characters[1], characters[8])), // wants t2 or m1
+            Player(id = UUID.randomUUID(), name = "Player 3", selectedChars = listOf(characters[2], characters[10])), // wants t3 or d1
+            Player(id = UUID.randomUUID(), name = "Player 4", selectedChars = listOf(characters[9], characters[0])), // wants m2 or t1
+            Player(id = UUID.randomUUID(), name = "Player 5", selectedChars = listOf(characters[10], characters[1])),  // wants d1 or t2
+            Player(id = UUID.randomUUID(), name = "Player 6", selectedChars = listOf(characters[2], characters[3])) // wants t3 or t4
+        )
+
+        // 3. Define starting count for 6 players
+        val startingCount = TypeCountLookup().getBaseCounts(players.size)
+
+        // 4. Initialize RoleSolver
+        val solver = RoleSolver(
+            players = players,
+            availableChars = characters,
+            baseCount = startingCount,
+            selectedPriority = SelectedPriorities.NO_PRIORITIES,
+            surpriseChances = mapOf(drunk to 1f)
+        )
+
+        // 5. Solve
+        val assignments = solver.optimizeAssignments()
+
+        // 6. Verify results
+        assert(assignments.isNotEmpty())
+        assertEquals(players.size, assignments.size)
+
+        // Check if all players are assigned a character
+        players.forEach { player ->
+            assertNotNull("Player ${player.name} should be assigned a character", assignments[player])
+        }
+
+        // Verify the assignments are optimal
+        assert(assignments[players[0]]?.first?.id == "m1")
+        assert(assignments[players[1]]?.first?.id == "t2")
+        assert(assignments[players[2]]?.first?.id == "t3")
+        assert(assignments[players[3]]?.first?.id == "drunk")
+        assert(assignments[players[3]]?.second?.id == "t1")
+        assert(assignments[players[4]]?.first?.id == "d1")
+        assert(assignments[players[5]]?.first?.id == "t4")
+    }
+
+    @Test
     fun testRoleSolverSurprise() = runBlocking {
         // 1. Create script with 11 characters
         val characters = mutableListOf<Character>()
         (1..6).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("o1", "Drunk", CharType.OUTSIDER, icon = 0, ability = "", thinksTheyAre = listOf(CharType.TOWNSFOLK)))
-        characters.add(Character("o2", "Outsider 2", CharType.OUTSIDER, icon = 0, ability = ""))
+        val drunk = Character("o1", TextValue.Raw("Drunk"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw(""), thinksTheyAre = listOf(CharType.TOWNSFOLK))
+        characters.add(drunk)
+        characters.add(Character("o2", TextValue.Raw("Outsider 2"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
+
         // 2. Setup 6 Players, each with 1 preferred character
         val players = listOf(
             Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0])), // wants t1
@@ -306,7 +371,7 @@ class RoleSolverTest {
             players = players,
             availableChars = characters,
             baseCount = startingCount,
-            unselectableChance = 1f
+            surpriseChances = mapOf(drunk to 1f)
         )
 
         // 5. Solve
@@ -321,15 +386,73 @@ class RoleSolverTest {
             assertNotNull("Player ${player.name} should be assigned a character", assignments[player])
         }
 
-        // Verify the assignments obey alignment priorities
+        // Verify the assignments add a surprise character
+        assert(assignments[players[0]]?.first?.id == "t1")
+        assert(assignments[players[1]]?.first?.id == "o1")
+        assert(assignments[players[1]]?.second?.id == "t2")
+        assert(assignments[players[2]]?.first?.id == "t3")
+        assert(assignments[players[3]]?.first?.id == "t4")
+        assert(assignments[players[4]]?.first?.id == "m1")
+        assert(assignments[players[5]]?.first?.id == "d1")
+    }
+
+    @Test
+    fun testRoleSolverMarionette() = runBlocking {
+        // 1. Create script with 11 characters
+        val characters = mutableListOf<Character>()
+        (1..6).forEach { i ->
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
+        }
+        (1..2).forEach { i ->
+            characters.add(Character("o$1", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
+        }
+        characters.add(Character("m1", TextValue.Raw("Minion 1"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
+        val marionette = Character("marionette", TextValue.Raw("Marionette"), type = CharType.MINION, icon = 0, ability = TextValue.Raw(""), thinksTheyAre = listOf(CharType.TOWNSFOLK))
+        characters.add(marionette)
+
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
+
+        // 2. Setup 6 Players, each with 1 preferred character
+        val players = listOf(
+            Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0])), // wants t1
+            Player(id = UUID.randomUUID(), name = "Player 2", selectedChars = listOf(characters[1])), // wants t2
+            Player(id = UUID.randomUUID(), name = "Player 3", selectedChars = listOf(characters[2])), // wants t3
+            Player(id = UUID.randomUUID(), name = "Player 4", selectedChars = listOf(characters[6])), // wants o1
+            Player(id = UUID.randomUUID(), name = "Player 5", selectedChars = listOf(characters[4])), // wants t5
+            Player(id = UUID.randomUUID(), name = "Player 6", selectedChars = listOf(characters[10]))  // wants d1
+        )
+
+        // 3. Define starting count for 6 players
+        val startingCount = TypeCountLookup().getBaseCounts(players.size)
+
+        // 4. Initialize RoleSolver
+        val solver = RoleSolver(
+            players = players,
+            availableChars = characters,
+            baseCount = startingCount,
+            surpriseChances = mapOf(marionette to 1f)
+        )
+
+        // 5. Solve
+        val assignments = solver.optimizeAssignments()
+
+        // 6. Verify results
+        assert(assignments.isNotEmpty())
+        assertEquals(players.size, assignments.size)
+
+        // Check if all players are assigned a character
+        players.forEach { player ->
+            assertNotNull("Player ${player.name} should be assigned a character", assignments[player])
+        }
+
+        // Verify the assignments obey marionette rules (must neighbor the demon)
         assert(assignments[players[0]]?.first == characters[0])
         assert(assignments[players[1]]?.first == characters[1])
         assert(assignments[players[2]]?.first == characters[2])
         assert(assignments[players[3]]?.first == characters[6])
-        assert(assignments[players[3]]?.second == characters[3])
-        assert(assignments[players[4]]?.first == characters[8])
+        assert(assignments[players[4]]?.first == characters[9])
+        assert(assignments[players[4]]?.second == characters[4])
         assert(assignments[players[5]]?.first == characters[10])
-
     }
 
     @Test
@@ -337,17 +460,17 @@ class RoleSolverTest {
         // 1. Create script with 12 characters
         val characters = mutableListOf<Character>()
         // One townsfolk with maxInstances = 3
-        characters.add(Character("t1", "Townsfolk 1", CharType.TOWNSFOLK, icon = 0, ability = "", maxInstances = 3))
+        characters.add(Character("t1", TextValue.Raw("Townsfolk 1"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw(""), maxInstances = 3))
         (2..6).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         // 2. Setup 6 players, three of which want "Townsfolk 1"
         val players = listOf(
@@ -387,19 +510,18 @@ class RoleSolverTest {
         // 1. Create script with 12 characters
         val characters = mutableListOf<Character>()
         (1..7).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
         // Demon with override modifier of CharType.MINION
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = "", overrideModifiers = listOf(CharType.MINION)))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw(""), overrideModifiers = listOf(CharType.MINION)))
 
         // 2. Setup 5 players, each with one character in their selectedChars list.
-        // Base count for 5 players: 3 Townsfolk, 0 Outsiders, 1 Minion, 1 Demon
         val players = listOf(
             Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0])), // wants t1
             Player(id = UUID.randomUUID(), name = "Player 2", selectedChars = listOf(characters[1])), // wants t2
@@ -439,14 +561,15 @@ class RoleSolverTest {
         // 1. Create script with 11 characters
         val characters = mutableListOf<Character>()
         (1..6).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("test", "Drunk", CharType.OUTSIDER, icon = 0, ability = "", thinksTheyAre = listOf(CharType.TOWNSFOLK)))
-        characters.add(Character("o2", "Outsider 2", CharType.OUTSIDER, icon = 0, ability = ""))
+        val drunk = Character("test", TextValue.Raw("Drunk"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw(""), thinksTheyAre = listOf(CharType.TOWNSFOLK))
+        characters.add(drunk)
+        characters.add(Character("o2", TextValue.Raw("Outsider 2"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         // 2. Setup 6 Players, each with 1 preferred character
         val players = listOf(
@@ -467,14 +590,13 @@ class RoleSolverTest {
                 players = players,
                 availableChars = characters,
                 baseCount = startingCount,
-                unselectableChance = 0.5f
+                surpriseChances = mapOf(drunk to 0.5f)
             )
             val assignments = solver.optimizeAssignments()
             if (assignments.values.any { it.first.id == "test" }) {
                 drunkCount++
             }
         }
-        println("Drunk count: $drunkCount")
         assert(drunkCount in 4000..6000) { "Drunk count was $drunkCount, expected 4000..6000" }
     }
 
@@ -482,17 +604,17 @@ class RoleSolverTest {
     fun testRoleSolverAtheist() = runBlocking {
         // 1. Create script with 11 characters
         val characters = mutableListOf<Character>()
-        val atheist = Character("atheist", "Atheist", CharType.TOWNSFOLK, icon = 0, ability = "", overrideModifiers = listOf(CharType.MINION, CharType.DEMON))
+        val atheist = Character("atheist", TextValue.Raw("Atheist"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw(""), overrideModifiers = listOf(CharType.MINION, CharType.DEMON))
         characters.add(atheist)
         (1..7).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
-        val minion1 = Character("m1", "Minion 1", CharType.MINION, icon = 0, ability = "")
-        val minion2 = Character("m2", "Minion 2", CharType.MINION, icon = 0, ability = "")
-        val demon = Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = "")
+        val minion1 = Character("m1", TextValue.Raw("Minion 1"), type = CharType.MINION, icon = 0, ability = TextValue.Raw(""))
+        val minion2 = Character("m2", TextValue.Raw("Minion 2"), type = CharType.MINION, icon = 0, ability = TextValue.Raw(""))
+        val demon = Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw(""))
         characters.add(minion1)
         characters.add(minion2)
         characters.add(demon)
@@ -527,12 +649,12 @@ class RoleSolverTest {
     @Test
     fun testRoleSolverDependency() = runBlocking {
         // Character t2 depends on t1
-        val t1 = Character("t1", "Townsfolk 1", CharType.TOWNSFOLK, icon = 0, ability = "")
-        val t2 = Character("t2", "Townsfolk 2", CharType.TOWNSFOLK, icon = 0, ability = "", dependsOn = "t1")
-        val otherChars = (3..6).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                listOf(Character("o1", "Outsider 1", CharType.OUTSIDER, icon = 0, ability = ""),
-                       Character("m1", "Minion 1", CharType.MINION, icon = 0, ability = ""),
-                       Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        val t1 = Character("t1", TextValue.Raw("Townsfolk 1"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw(""))
+        val t2 = Character("t2", TextValue.Raw("Townsfolk 2"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw(""), dependsOn = "t1")
+        val otherChars = (3..6).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                listOf(Character("o1", TextValue.Raw("Outsider 1"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")),
+                    Character("m1", TextValue.Raw("Minion 1"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")),
+                    Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
         val characters = listOf(t1, t2) + otherChars
 
         // 5 players: 3 Townsfolk, 0 Outsider, 1 Minion, 1 Demon
@@ -562,10 +684,10 @@ class RoleSolverTest {
     @Test
     fun testRoleSolverAutoSentinel() = runBlocking {
         // Base count for 6 players: 3 Townsfolk, 1 Outsider, 1 Minion, 1 Demon
-        val characters = (1..6).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                (1..3).map { i -> Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = "") } +
-                listOf(Character("m1", "Minion 1", CharType.MINION, icon = 0, ability = ""),
-                       Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        val characters = (1..6).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                (1..3).map { i -> Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")) } +
+                listOf(Character("m1", TextValue.Raw("Minion 1"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")),
+                    Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         val basePlayers = (1..6).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
         val startingCount = TypeCountLookup().getBaseCounts(6)
@@ -609,10 +731,10 @@ class RoleSolverTest {
         // Create Xaan character with its unique additive modifiers
         val xaan = Character(
             id = "xaan",
-            name = "Xaan",
+            name = TextValue.Raw("Xaan"),
             type = CharType.MINION,
             icon = 0,
-            ability = "On night X, all Townsfolk are poisoned until dusk. [X Outsiders]",
+            ability = TextValue.Raw("On night X, all Townsfolk are poisoned until dusk. [X Outsiders]"),
             additiveModifiers = listOf(
                 Count(townsfolk = 4, outsider = -4),
                 Count(townsfolk = 3, outsider = -3),
@@ -628,9 +750,9 @@ class RoleSolverTest {
 
         // Script: 1 Demon, 1 Xaan (Minion), 4 Outsiders, many Townsfolk
         val characters = listOf(xaan) +
-                (1..10).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                (1..4).map { i -> Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = "") } +
-                listOf(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+                (1..10).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                (1..4).map { i -> Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")) } +
+                listOf(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         val basePlayers = (1..7).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
         // 7 players: 5 Townsfolk, 0 Outsiders, 1 Minion, 1 Demon.
@@ -664,17 +786,17 @@ class RoleSolverTest {
     fun testRoleSolverBalloonist() = runBlocking {
         val balloonist = Character(
             id = "balloonist",
-            name = "Balloonist",
+            name = TextValue.Raw("Balloonist"),
             type = CharType.TOWNSFOLK,
             icon = 0,
-            ability = "[+0 or +1 Outsider]",
+            ability = TextValue.Raw("[+0 or +1 Outsider]"),
             additiveModifiers = listOf(Count(), Count(townsfolk = -1, outsider = 1))
         )
         val characters = listOf(balloonist) +
-                (1..10).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                (1..2).map { i -> Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = "") } +
-                listOf(Character("m1", "Minion 1", CharType.MINION, icon = 0, ability = ""),
-                       Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+                (1..10).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                (1..2).map { i -> Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")) } +
+                listOf(Character("m1", TextValue.Raw("Minion 1"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")),
+                    Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         val basePlayers = (1..7).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
         val baseCount7 = Count(townsfolk = 5, outsider = 0, minion = 1, demon = 1)
@@ -701,17 +823,17 @@ class RoleSolverTest {
     fun testRoleSolverHeretic() = runBlocking {
         val heretic = Character(
             id = "heretic",
-            name = "Heretic",
+            name = TextValue.Raw("Heretic"),
             type = CharType.OUTSIDER,
             icon = 0,
-            ability = "...",
+            ability = TextValue.Raw("..."),
             hardJinxedWith = listOf("lleech")
         )
-        val lleech = Character("lleech", "Lleech", CharType.DEMON, icon = 0, ability = "")
-        val otherDemon = Character("imp", "Imp", CharType.DEMON, icon = 0, ability = "")
+        val lleech = Character("lleech", TextValue.Raw("Lleech"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw(""))
+        val otherDemon = Character("imp", TextValue.Raw("Imp"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw(""))
         val characters = listOf(heretic, lleech, otherDemon) +
-                (1..6).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                listOf(Character("m1", "Minion 1", CharType.MINION, icon = 0, ability = ""))
+                (1..6).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                listOf(Character("m1", TextValue.Raw("Minion 1"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
 
         val basePlayers = (1..6).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
         val baseCount6 = Count(townsfolk = 3, outsider = 1, minion = 1, demon = 1)
@@ -735,17 +857,17 @@ class RoleSolverTest {
     fun testRoleSolverHermit() = runBlocking {
         val hermit = Character(
             id = "hermit",
-            name = "Hermit",
+            name = TextValue.Raw("Hermit"),
             type = CharType.OUTSIDER,
             icon = 0,
-            ability = "[-0 or -1 Outsider]",
+            ability = TextValue.Raw("[-0 or -1 Outsider]"),
             additiveModifiers = listOf(Count(), Count(townsfolk = 1, outsider = -1))
         )
         val characters = listOf(hermit) +
-                (1..10).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                (1..2).map { i -> Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = "") } +
-                listOf(Character("m1", "Minion 1", CharType.MINION, icon = 0, ability = ""),
-                       Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+                (1..10).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                (1..2).map { i -> Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")) } +
+                listOf(Character("m1", TextValue.Raw("Minion 1"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")),
+                    Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         val basePlayers = (1..9).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
         val baseCount8 = TypeCountLookup().getBaseCounts(basePlayers.size)
@@ -776,16 +898,16 @@ class RoleSolverTest {
     fun testRoleSolverGodfather() = runBlocking {
         val godfather = Character(
             id = "godfather",
-            name = "Godfather",
+            name = TextValue.Raw("Godfather"),
             type = CharType.MINION,
             icon = 0,
-            ability = "[-1 or +1 Outsider]",
+            ability = TextValue.Raw("[-1 or +1 Outsider]"),
             additiveModifiers = listOf(Count(townsfolk = -1, outsider = 1), Count(townsfolk = 1, outsider = -1))
         )
         val characters = listOf(godfather) +
-                (1..10).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                (1..2).map { i -> Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = "") } +
-                listOf(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+                (1..10).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                (1..2).map { i -> Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")) } +
+                listOf(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         val basePlayers = (1..8).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
         val baseCount8 = TypeCountLookup().getBaseCounts(basePlayers.size)
@@ -817,17 +939,17 @@ class RoleSolverTest {
     fun testRoleSolverKazali() = runBlocking {
         val kazali = Character(
             id = "kazali",
-            name = "Kazali",
+            name = TextValue.Raw("Kazali"),
             type = CharType.DEMON,
             icon = 0,
-            ability = "[No Minions]",
+            ability = TextValue.Raw("[No Minions]"),
             overrideModifiers = listOf(CharType.MINION)
         )
         val characters =
-                (1..10).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                (1..2).map { i -> Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = "") } +
-                (1..2).map { i -> Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = "") } +
-                listOf(kazali)
+            (1..10).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                    (1..2).map { i -> Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")) } +
+                    (1..2).map { i -> Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")) } +
+                    listOf(kazali)
 
         val basePlayers = (1..6).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
         val baseCount6 = TypeCountLookup().getBaseCounts(basePlayers.size)
@@ -848,17 +970,17 @@ class RoleSolverTest {
     fun testRoleSolverLegion() = runBlocking {
         val legion = Character(
             id = "legion",
-            name = "Legion",
+            name = TextValue.Raw("Legion"),
             type = CharType.DEMON,
             icon = 0,
-            ability = "[+some Legion, no Minions]",
+            ability = TextValue.Raw("[+some Legion, no Minions]"),
             overrideModifiers = listOf(CharType.MINION),
             maxInstances = 15
         )
-        val otherDemon = Character("imp", "Imp", CharType.DEMON, icon = 0, ability = "")
-        val characters = (1..8).map { i -> Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = "") } +
-                (1..4).map { i -> Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = "") } +
-                (1..4).map { i -> Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = "") } +
+        val otherDemon = Character("imp", TextValue.Raw("Imp"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw(""))
+        val characters = (1..8).map { i -> Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")) } +
+                (1..4).map { i -> Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")) } +
+                (1..4).map { i -> Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")) } +
                 listOf(legion, otherDemon)
 
         val players = (1..10).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
@@ -904,15 +1026,15 @@ class RoleSolverTest {
         // 1. Create a list of 6 townsfolk, 2 outsiders, 2 minions, and 1 demon.
         val characters = mutableListOf<Character>()
         (1..6).forEach { i ->
-            characters.add(Character("t$i", "Townsfolk $i", CharType.TOWNSFOLK, icon = 0, ability = ""))
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("o$i", "Outsider $i", CharType.OUTSIDER, icon = 0, ability = ""))
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
         }
         (1..2).forEach { i ->
-            characters.add(Character("m$i", "Minion $i", CharType.MINION, icon = 0, ability = ""))
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
         }
-        characters.add(Character("d1", "Demon 1", CharType.DEMON, icon = 0, ability = ""))
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
 
         // 2. Create a list of 8 players with preferences as described.
         val players = (1..8).map { i -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(characters[0])) }
@@ -940,10 +1062,71 @@ class RoleSolverTest {
         assertEquals(1, assignedRoles.count { it.type == CharType.DEMON })
     }
 
+    @Test
+    fun testRoleSolverPriorities() = runBlocking {
+        // 1. Create a list of 6 townsfolk, 2 outsiders, 2 minions, and 1 demon.
+        val characters = mutableListOf<Character>()
+        (1..6).forEach { i ->
+            characters.add(Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw("")))
+        }
+        (1..2).forEach { i ->
+            characters.add(Character("o$i", TextValue.Raw("Outsider $i"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw("")))
+        }
+        (1..2).forEach { i ->
+            characters.add(Character("m$i", TextValue.Raw("Minion $i"), type = CharType.MINION, icon = 0, ability = TextValue.Raw("")))
+        }
+        characters.add(Character("d1", TextValue.Raw("Demon 1"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw("")))
+
+        // 2. Create a list of 8 players with preferences as described.
+        val players = (1..8).map { i ->
+            Player(id = UUID.randomUUID(),
+                name = "Player $i",
+                selectedChars = when (i) {
+                    1 -> listOf(characters[1], characters[0], characters[6]) // t2 or t1 or o1
+                    2 -> listOf(characters[2], characters[1], characters[3]) // t3 or t2 or t4
+                    3 -> listOf(characters[3], characters[2], characters[10]) // t4 or t3 or d1
+                    4 -> listOf(characters[4], characters[3], characters[7]) // t5 or t4 or o2
+                    5 -> listOf(characters[5], characters[4], characters[8]) // t6 or t5 or m1
+                    6 -> listOf(characters[7], characters[6], characters[0]) // o2 or o1 or t1
+                    7 -> listOf(characters[9], characters[8], characters[2]) // m2 or m1 or t3
+                    8 -> listOf(characters[10], characters[8], characters[1]) // d1 or m1 or t2
+                    else -> emptyList()
+                }
+            )
+        }
+
+        // 5, 1, 1, 1
+        val baseCount = TypeCountLookup().getBaseCounts(players.size)
+
+        val solver = RoleSolver(
+            players = players,
+            availableChars = characters,
+            baseCount = baseCount,
+            playerPriorityToggle = true
+        )
+        // 5. Solve
+        val assignments = solver.optimizeAssignments()
+
+        // 6. Verify results
+        assert(assignments.isNotEmpty())
+        val assignedRoles = assignments.values.map { it.first }
+
+        // Assert that list order influenced assignments correctly
+        assert(assignments[players[0]]?.first?.id == "t2")
+        assert(assignments[players[1]]?.first?.id == "t3")
+        assert(assignments[players[2]]?.first?.id == "t4")
+        assert(assignments[players[3]]?.first?.id == "t5")
+        assert(assignments[players[4]]?.first?.id == "t6")
+        assert(assignments[players[5]]?.first?.id == "o2")
+        assert(assignments[players[6]]?.first?.id == "m2")
+        assert(assignments[players[7]]?.first?.id == "d1")
+    }
+
     fun printAssignments(assignments: Map<Player, Pair<Character, Character?>>) {
         if (assignments.isEmpty()) println("No assignments found")
         assignments.forEach { (player, character) ->
             println("${player.name}: ${character.first.name} (thinks they are ${character.second?.name ?: "none"})")
+            println("Selected characters: ${player.selectedChars.map { it.name }}")
         }
     }
 }

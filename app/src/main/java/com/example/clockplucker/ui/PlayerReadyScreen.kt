@@ -25,8 +25,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.clockplucker.MainViewModel
+import com.example.clockplucker.R
 
 @Composable
 fun PlayerReadyScreen(
@@ -36,7 +38,7 @@ fun PlayerReadyScreen(
     viewModel: MainViewModel
 ) {
     val currentPlayer = viewModel.players.getOrNull(progress)
-    val playerName = currentPlayer?.name ?: "Unknown Player"
+    val playerName = currentPlayer?.name ?: stringResource(R.string.unknown_player)
 
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -49,19 +51,19 @@ fun PlayerReadyScreen(
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
             text = {
-                Text(text = "Are you sure you want to return to the player list?")
+                Text(text = stringResource(R.string.player_ready_exit_confirm))
             },
             confirmButton = {
                 TextButton(onClick = {
                     showExitDialog = false
                     onBack()
                 }) {
-                    Text("YES", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.yes), style = MaterialTheme.typography.bodyMedium)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showExitDialog = false }) {
-                    Text("NO", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.no), style = MaterialTheme.typography.bodyMedium)
                 }
             }
         )
@@ -84,7 +86,7 @@ fun PlayerReadyScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close"
+                    contentDescription = stringResource(R.string.close)
                 )
             }
 
@@ -96,7 +98,7 @@ fun PlayerReadyScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Next Player",
+                    text = stringResource(R.string.next_player),
                     style = MaterialTheme.typography.titleLarge
                 )
 
@@ -110,8 +112,7 @@ fun PlayerReadyScreen(
                 PlayerProgressCircle(
                     numPlayers = viewModel.players.size,
                     progress = progress,
-                    modifier = Modifier
-                        .padding(vertical = 24.dp)
+                    modifier = Modifier.padding(vertical = 24.dp)
                 )
 
                 OutlinedButton(onClick = {
@@ -121,7 +122,7 @@ fun PlayerReadyScreen(
                     onNext()
                 }) {
                     Text(
-                        text = "READY",
+                        text = stringResource(R.string.ready),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary
                     )

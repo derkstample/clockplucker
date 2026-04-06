@@ -2,7 +2,12 @@ package com.example.clockplucker.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -22,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -178,6 +184,70 @@ fun PlayerProgressCircle(
     }
 }
 
+@Composable
+fun WaitingAnimation(
+    numPlayers: Int,
+    modifier: Modifier = Modifier,
+    radius: Dp = 100.dp
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "waiting")
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
+    )
+
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        val circleSizeFactor = 2.0f / numPlayers.toFloat()
+        val totalSizeFactor = 2.0f + circleSizeFactor
+
+        // The diameter we'd like to have based on the preferred radius
+        val preferredDiameter = radius * totalSizeFactor
+
+        // The actual diameter available in the current constraints
+        val availableDiameter = if (maxHeight.isSpecified && maxHeight < 2000.dp) {
+            min(maxWidth, maxHeight)
+        } else {
+            maxWidth
+        }
+
+        // We use the smaller of what we want and what we have
+        val totalSize = min(availableDiameter, preferredDiameter)
+
+        // Recalculate radius and circleSize based on the actual totalSize
+        val actualRadius = totalSize / totalSizeFactor
+        val circleSize = actualRadius * circleSizeFactor
+
+        Box(
+            modifier = Modifier
+                .size(totalSize)
+                .rotate(angle),
+            contentAlignment = Alignment.Center
+        ) {
+            for (i in 0 until numPlayers) {
+                val circleAngle = (i.toFloat() / numPlayers) * 2 * Math.PI
+                val x = (actualRadius.value * cos(circleAngle)).dp
+                val y = (actualRadius.value * sin(circleAngle)).dp
+
+                Box(
+                    modifier = Modifier
+                        .offset(x,y)
+                        .size(circleSize)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                )
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PlayerProgressCirclePreview() {
@@ -187,3 +257,16 @@ fun PlayerProgressCirclePreview() {
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun WaitingAnimationPreview() {
+    MaterialTheme {
+        Box(modifier = Modifier.size(300.dp), contentAlignment = Alignment.Center) {
+            WaitingAnimation(
+                numPlayers = 8
+            )
+        }
+    }
+}
+

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -30,12 +31,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.clockplucker.HelpButton
 import com.example.clockplucker.MainViewModel
 import com.example.clockplucker.NDropdown
 import com.example.clockplucker.NavigationBar
+import com.example.clockplucker.R
 import com.example.clockplucker.SectionHeader
 import com.example.clockplucker.SelectedModes
 import com.example.clockplucker.SelectedPriorities
@@ -52,6 +55,7 @@ fun OptionsScreen(
 ) {
     var helpText by rememberSaveable { mutableStateOf<String?>(null) }
     val scrollState = rememberScrollState()
+    
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -71,12 +75,12 @@ fun OptionsScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp)
         ) {
-            SectionHeader("SELECTION OPTIONS")
+            SectionHeader(stringResource(R.string.option_selection_mode))
 
             val modes = listOf(
-                "No Restrictions" to "Players can select any number of preferred characters.",
-                "n Of Each Alignment" to "Players can select up to n character(s) of each alignment (Good / Evil).",
-                "n Of Each Type" to "Players can select up to n character(s) of each type (Townsfolk / Outsider / Minion / Demon)."
+                stringResource(R.string.mode_no_restrictions) to stringResource(R.string.mode_no_restrictions_desc),
+                stringResource(R.string.mode_n_alignment) to stringResource(R.string.mode_n_alignment_desc),
+                stringResource(R.string.mode_n_type) to stringResource(R.string.mode_n_type_desc)
             )
 
             modes.forEachIndexed { index, pair ->
@@ -100,7 +104,7 @@ fun OptionsScreen(
 
                         when (i) {
                             2 -> {
-                                val maxAlignment = viewModel.loadedScript?.characters?.let { chars ->
+                                val maxAlignment = viewModel.loadedScript?.selectableCharacters?.let { chars ->
                                     val good = chars.count { it.alignment == CharAlignment.GOOD }
                                     val evil = chars.count { it.alignment == CharAlignment.EVIL }
                                     maxOf(good, evil)
@@ -112,11 +116,11 @@ fun OptionsScreen(
                                     min = 1,
                                     max = maxAlignment
                                 )
-                                Text(text = " Of Each Alignment", style = MaterialTheme.typography.bodyMedium)
+                                Text(text = stringResource(R.string.n_alignment_dropdown), style = MaterialTheme.typography.bodyMedium)
                             }
 
                             3 -> {
-                                val maxType = viewModel.loadedScript?.characters?.let { chars ->
+                                val maxType = viewModel.loadedScript?.selectableCharacters?.let { chars ->
                                     val townsfolk = chars.count { it.type == CharType.TOWNSFOLK }
                                     val outsider = chars.count { it.type == CharType.OUTSIDER }
                                     val minion = chars.count { it.type == CharType.MINION }
@@ -130,7 +134,7 @@ fun OptionsScreen(
                                     min = 1,
                                     max = maxType
                                 )
-                                Text(text = " Of Each Type", style = MaterialTheme.typography.bodyMedium)
+                                Text(text = stringResource(R.string.n_type_dropdown), style = MaterialTheme.typography.bodyMedium)
                             }
 
                             else -> {
@@ -162,13 +166,13 @@ fun OptionsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-            SectionHeader(text = "STORYTELLER PRIORITIES")
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionHeader(text = stringResource(R.string.option_storyteller_priorities))
 
             val priorities = listOf(
-                "No Storyteller Priorities" to "The alignment and character type of each player is not influenced by the storyteller.",
-                "Prioritize Alignments" to "The storyteller chooses the alignments of one or more players to prioritize (Good / Evil).",
-                "Prioritize Types" to "The storyteller chooses the types of one or more players to prioritize (Townsfolk / Outsider / Minion / Demon)."
+                stringResource(R.string.priority_no_priorities) to stringResource(R.string.priority_no_priorities_desc),
+                stringResource(R.string.priority_alignment) to stringResource(R.string.priority_alignment_desc),
+                stringResource(R.string.priority_type) to stringResource(R.string.priority_type_desc)
             )
 
             priorities.forEachIndexed { index, pair ->
@@ -181,7 +185,9 @@ fun OptionsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { viewModel.selectedPriority = SelectedPriorities.fromInt(i) }
+                            .clickable {
+                                viewModel.selectedPriority = SelectedPriorities.fromInt(i)
+                            }
                             .padding(vertical = 12.dp)
                     ) {
                         RadioButton(
@@ -201,9 +207,10 @@ fun OptionsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-            SectionHeader("PLAYER PRIORITIES") // Divider with no label
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionHeader(stringResource(R.string.option_player_priorities))
 
+            val playerPriorityHelp = stringResource(R.string.player_priority_desc)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -212,7 +219,9 @@ fun OptionsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { viewModel.playerPriorityToggle = !viewModel.playerPriorityToggle }
+                        .clickable {
+                            viewModel.playerPriorityToggle = !viewModel.playerPriorityToggle
+                        }
                         .padding(vertical = 12.dp)
                 ) {
                     Switch(
@@ -220,16 +229,19 @@ fun OptionsScreen(
                         onCheckedChange = { viewModel.playerPriorityToggle = it }
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text(text = "Enable Player Priorities", style = MaterialTheme.typography.bodyMedium)
+                    Text(text = stringResource(R.string.player_priority), style = MaterialTheme.typography.bodyMedium)
                 }
-                HelpButton(onClick = {
-                    helpText = "Players are allowed to prioritize certain selected characters over others in a ranked list."
-                })
+                HelpButton(onClick = { helpText = playerPriorityHelp })
             }
 
             if (viewModel.loadedScript?.containsSentinel == true) {
-                Spacer(modifier = Modifier.weight(1f))
-                SectionHeader("SENTINEL OPTIONS")
+                Spacer(modifier = Modifier.height(16.dp))
+                SectionHeader(stringResource(R.string.option_sentinel))
+
+                val sentinelHelpAutoText = stringResource(R.string.sentinel_help_auto)
+                val plusOneText = stringResource(R.string.sentinel_help_plusone)
+                val minusOneText = stringResource(R.string.sentinel_help_minusone)
+                val zeroText = stringResource(R.string.sentinel_help_zero)
 
                 Column {
                     Row(
@@ -282,14 +294,16 @@ fun OptionsScreen(
                                     }
                                 }
                             }
-                            Text(text = " Outsiders", style = MaterialTheme.typography.bodyMedium)
+                            Text(text = stringResource(R.string.sentinel_label), style = MaterialTheme.typography.bodyMedium)
                         }
-                        val sentinelHelpText = when (viewModel.sentinelMod) {
-                            1 -> "This script contains a Sentinel. This option forces the Sentinel to add 1 Outsider, removing 1 Townsfolk in the process."
-                            -1 -> "This script contains a Sentinel. This option forces the Sentinel to remove 1 Outsider, adding 1 Townsfolk in the process."
-                            else -> "This script contains a Sentinel. This option forces the Sentinel to have no effect on the number of Outsiders in the game."
-                        }
-                        HelpButton(onClick = { helpText = sentinelHelpText })
+                        
+                        HelpButton(onClick = { 
+                            helpText = when (viewModel.sentinelMod) {
+                                1 -> plusOneText
+                                -1 -> minusOneText
+                                else -> zeroText
+                            }
+                        })
                     }
 
                     HorizontalDivider(
@@ -313,55 +327,64 @@ fun OptionsScreen(
                                 onClick = { viewModel.autoSentinel = true }
                             )
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = "Automatic", style = MaterialTheme.typography.bodyMedium)
+                            Text(text = stringResource(R.string.sentinel_label_automatic), style = MaterialTheme.typography.bodyMedium)
                         }
-                        HelpButton(onClick = {
-                            helpText = "This script contains a Sentinel. This option allows the Sentinel to automatically determine the best option to use when assigning characters to each player."
-                        })
+                        HelpButton(onClick = { helpText = sentinelHelpAutoText })
                     }
                 }
             }
 
-            val surpriseChars = viewModel.loadedScript?.characters?.filter { it.thinksTheyAre.isNotEmpty() } ?: emptyList()
+            val surpriseChars = viewModel.loadedScript?.selectableCharacters?.filter { it.thinksTheyAre.isNotEmpty() } ?: emptyList()
             if (surpriseChars.isNotEmpty()) {
-                Spacer(modifier = Modifier.weight(1f))
-                SectionHeader("SURPRISE CHARACTERS")
+                Spacer(modifier = Modifier.height(16.dp))
+                SectionHeader(stringResource(R.string.option_surprise_chars))
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Surprise character chance: ${(viewModel.surpriseChance * 100).roundToInt()}%",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                        val surpriseNames = when (surpriseChars.size) {
-                            1 -> surpriseChars.first().name
-                            2 -> surpriseChars.joinToString(separator = " and ") { it.name }
-                            else -> surpriseChars.dropLast(1).joinToString(separator = ", ") { it.name } + ", and " + surpriseChars.last().name
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
-                        HelpButton(onClick = {
-                            helpText = when (surpriseChars.size) {
-                                1 -> "The $surpriseNames is designed such that players cannot select it as preferred. Therefore, it can only be assigned if forced to, which will happen which will happen with a ${(viewModel.surpriseChance * 100).roundToInt()}% chance."
-                                else -> "The $surpriseNames are designed such that players cannot select them as preferred. Therefore, they can only be assigned if forced to, which will happen with a ${(viewModel.surpriseChance * 100).roundToInt()}% chance."
-                            }
-                        })
-                    }
-                    Slider(
-                        value = viewModel.surpriseChance,
-                        onValueChange = { viewModel.surpriseChance = it },
-                        valueRange = 0f..1f,
-                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
+                surpriseChars.forEachIndexed { index, char ->
+                    val chance = viewModel.surpriseChance[char] ?: 0.5f
+                    val charName = char.name.asString()
+                    
+                    val surpriseDesc = stringResource(
+                        R.string.surprise_desc,
+                        charName,
+                        (chance * 100).roundToInt()
                     )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.assignment_chance,
+                                    charName,
+                                    (chance * 100).roundToInt()
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            HelpButton(onClick = { helpText = surpriseDesc })
+                        }
+                        Slider(
+                            value = chance,
+                            onValueChange = { viewModel.surpriseChance[char] = it },
+                            valueRange = 0f..1f,
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
+                        )
+                    }
+                    if (index < surpriseChars.size - 1) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                    }
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
@@ -370,7 +393,7 @@ fun OptionsScreen(
             onDismissRequest = { helpText = null },
             confirmButton = {
                 TextButton(onClick = { helpText = null }) {
-                    Text(text = "OK", style = MaterialTheme.typography.bodyMedium)
+                    Text(text = stringResource(R.string.ok), style = MaterialTheme.typography.bodyMedium)
                 }
             },
             text = { Text(text) }

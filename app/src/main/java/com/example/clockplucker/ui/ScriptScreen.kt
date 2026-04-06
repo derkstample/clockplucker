@@ -51,10 +51,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.clockplucker.MainViewModel
 import com.example.clockplucker.NavigationBar
+import com.example.clockplucker.R
 import com.example.clockplucker.SectionHeader
 import com.example.clockplucker.data.Script
 import com.example.clockplucker.data.ScriptLoader
@@ -73,6 +75,8 @@ fun ScriptScreen(
     val savedScripts by viewModel.savedScripts.collectAsState()
     val loadedScript = viewModel.loadedScript
 
+    var showImportErrorDialog by rememberSaveable { mutableStateOf(false) }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -84,15 +88,32 @@ fun ScriptScreen(
             content?.let { json ->
                 val script = ScriptLoader().parseScript(json)
                 
-                // save local copy for quick select list
-                val fileName = "script_${System.currentTimeMillis()}.json"
-                context.openFileOutput(fileName, Context.MODE_PRIVATE).use { output ->
-                    output.write(json.toByteArray())
+                if (script != null) {
+                    // save local copy for quick select list
+                    val fileName = "script_${System.currentTimeMillis()}.json"
+                    context.openFileOutput(fileName, Context.MODE_PRIVATE).use { output ->
+                        output.write(json.toByteArray())
+                    }
+                    viewModel.saveScriptToHistory(script, fileName)
+                    viewModel.loadedScript = script
+                } else {
+                    showImportErrorDialog = true
                 }
-                viewModel.saveScriptToHistory(script, fileName)
-                viewModel.loadedScript = script
             }
         }
+    }
+
+    if (showImportErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showImportErrorDialog = false },
+            title = { Text(text = stringResource(R.string.invalid_script)) },
+            text = { Text(text = stringResource(R.string.invalid_script_desc)) },
+            confirmButton = {
+                TextButton(onClick = { showImportErrorDialog = false }) {
+                    Text(text = stringResource(R.string.ok), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        )
     }
 
     val filteredScripts = remember(savedScripts, loadedScript) {
@@ -119,7 +140,7 @@ fun ScriptScreen(
                 .padding(innerPadding)
         ) {
             SectionHeader(
-                text = "SELECT SCRIPT",
+                text = stringResource(R.string.select_script),
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
@@ -132,7 +153,7 @@ fun ScriptScreen(
             )
 
             SectionHeader(
-                text = "SAVED SCRIPTS",
+                text = stringResource(R.string.saved_scripts),
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
             
@@ -149,8 +170,11 @@ fun ScriptScreen(
                     if (showDeleteDialog) {
                         AlertDialog(
                             onDismissRequest = { showDeleteDialog = false },
-                            title = { Text(text = "Delete Script") },
-                            text = { Text(text = "Are you sure you want to delete \"${savedScript.name}\"?") },
+                            title = { Text(text = stringResource(R.string.delete_script)) },
+                            text = { Text(text = stringResource(
+                                R.string.delete_script_desc,
+                                savedScript.name
+                            )) },
                             confirmButton = {
                                 TextButton(
                                     onClick = {
@@ -158,12 +182,12 @@ fun ScriptScreen(
                                         showDeleteDialog = false
                                     }
                                 ) {
-                                    Text(text = "Delete", style = MaterialTheme.typography.bodyMedium)
+                                    Text(text = stringResource(R.string.delete), style = MaterialTheme.typography.bodyMedium)
                                 }
                             },
                             dismissButton = {
                                 TextButton(onClick = { showDeleteDialog = false }) {
-                                    Text(text = "Cancel", style = MaterialTheme.typography.bodyMedium)
+                                    Text(text = stringResource(R.string.cancel), style = MaterialTheme.typography.bodyMedium)
                                 }
                             }
                         )
@@ -241,7 +265,7 @@ fun SelectedScriptArea(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "by ${targetScript.author}",
+                                    text = stringResource(R.string.script_author, targetScript.author),
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.alignByBaseline()
@@ -254,14 +278,14 @@ fun SelectedScriptArea(
                             val dateStr = dateFormat.format(Date(dateAdded))
 
                             Text(
-                                text = "Added $dateStr",
+                                text = stringResource(R.string.script_added, dateStr),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
                     } else {
                         Text(
-                            text = "No script selected",
+                            text = stringResource(R.string.no_script_selected),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -286,7 +310,7 @@ fun ScriptImportButton(launcher: ActivityResultLauncher<String>){
     ) {
         Icon(
             imageVector = Icons.Default.Add,
-            contentDescription = "Add Script"
+            contentDescription = stringResource(R.string.add_script)
         )
     }
 }
@@ -302,7 +326,7 @@ fun ScriptDeleteButton(onClick: () -> Unit){
     ) {
         Icon(
             imageVector = Icons.Default.Close,
-            contentDescription = "Remove Script"
+            contentDescription = stringResource(R.string.remove_script)
         )
     }
 }
@@ -346,7 +370,7 @@ fun ScriptBox(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "by ${savedScript.author}",
+                            text = stringResource(R.string.script_author, savedScript.author),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.alignByBaseline()
@@ -356,23 +380,23 @@ fun ScriptBox(
                 ScriptDeleteButton(onClick = onDeleteClick)
             }
             Spacer(modifier = Modifier.height(4.dp))
-            
+
             val dateFormat = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
             val dateStr = dateFormat.format(Date(savedScript.dateAdded))
-            val relativeTime = formatRelativeTime(savedScript.lastAccessed)
+            val relativeTime = formatRelativeTime(savedScript.lastAccessed, LocalContext.current)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    text = "Added $dateStr",
+                    text = stringResource(R.string.script_added_label, dateStr),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "Last Played $relativeTime",
+                    text = stringResource(R.string.script_last_played_label, relativeTime),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -381,10 +405,13 @@ fun ScriptBox(
     }
 }
 
-fun formatRelativeTime(timestamp: Long): String {
+fun formatRelativeTime(
+    timestamp: Long,
+    context: Context
+): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
-    if (diff < 60000) return "just now"
+    if (diff < 60000) return context.getString(R.string.just_now)
 
     val minutes = diff / 60000
     val hours = minutes / 60
@@ -393,17 +420,30 @@ fun formatRelativeTime(timestamp: Long): String {
     val years = days / 365
 
     return when {
-        years > 0 -> "$years year${if (years > 1) "s" else ""} ago"
-        months > 0 -> "$months month${if (months > 1) "s" else ""} ago"
-        days > 0 -> "$days day${if (days > 1) "s" else ""} ago"
-        hours > 0 -> {
-            val remainingMinutes = minutes % 60
-            if (remainingMinutes > 0) {
-                "$hours hour${if (hours > 1) "s" else ""} $remainingMinutes minute${if (remainingMinutes > 1) "s" else ""} ago"
-            } else {
-                "$hours hour${if (hours > 1) "s" else ""} ago"
-            }
-        }
-        else -> "$minutes minute${if (minutes > 1) "s" else ""} ago"
+        years > 0 -> context.getString(
+            R.string.script_added_years_ago,
+            years,
+            if (years > 1) "s" else ""
+        )
+        months > 0 -> context.getString(
+            R.string.script_added_months_ago,
+            months,
+            if (months > 1) "s" else ""
+        )
+        days > 0 -> context.getString(
+            R.string.script_added_days_ago,
+            days,
+            if (days > 1) "s" else ""
+        )
+        hours > 0 -> context.getString(
+            R.string.script_added_hours_ago,
+            hours,
+            if (hours > 1) "s" else ""
+        )
+        else -> context.getString(
+            R.string.script_added_minutes_ago,
+            minutes,
+            if (minutes > 1) "s" else ""
+        )
     }
 }

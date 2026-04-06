@@ -15,6 +15,7 @@ room = "2.8.4"
 ksp = "2.3.5"
 reorderable = "3.0.0"
 choco = "4.10.14"
+json = "20240303"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +41,7 @@ androidx-compose-animation-core = { group = "androidx.compose.animation", name =
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderable" }
 choco-solver = { group = "org.choco-solver", name = "choco-solver", version.ref = "choco" }
+json = { group = "org.json", name = "json", version.ref = "json" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

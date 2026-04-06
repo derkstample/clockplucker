@@ -1,0 +1,21 @@
+[
+  {
+    "id": "_meta",
+    "author": "tester",
+    "name": "test"
+  },
+  "bountyhunter",
+  "villageidiot",
+  "king",
+  "choirboy",
+  "banshee",
+  "atheist",
+  "lunatic",
+  "drunk",
+  "xaan",
+  "marionette",
+  "legion",
+  "pope",
+  "sentinel",
+  { "id": "test", "name": "Test Character", "team": "outsider", "ability": "test ability" }
+]
