@@ -16,4 +16,8 @@ class ScriptRepository(private val scriptDao: ScriptDao) {
     suspend fun update(script: SavedScript) {
         scriptDao.updateScript(script)
     }
+
+    suspend fun updateLastAccessed(name: String, author: String) {
+        scriptDao.updateLastAccessed(name, author)
+    }
 }

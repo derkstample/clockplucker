@@ -20,7 +20,7 @@
     <string name="player_priority">Enable Player Priorities</string>
     <string name="player_priority_desc">Players are allowed to prioritize certain selected characters over others in a ranked list.</string>
     <string name="option_sentinel">SENTINEL OPTIONS</string>
-    <string name="sentinel_label">" Outsiders"</string>
+    <string name="sentinel_label">Outsider%1$s</string>
     <string name="sentinel_help_plusone">This script contains a Sentinel. This option forces the Sentinel to add 1 Outsider, removing 1 Townsfolk in the process.</string>
     <string name="sentinel_help_minusone">This script contains a Sentinel. This option forces the Sentinel to remove 1 Outsider, adding 1 Townsfolk in the process.</string>
     <string name="sentinel_help_zero">This script contains a Sentinel. This option forces the Sentinel to have no effect on the number of Outsiders in the game.</string>

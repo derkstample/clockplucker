@@ -198,7 +198,6 @@ fun ClockPluckerApp(viewModel: MainViewModel) {
         }
         composable(Screen.GrimRevealScreen.route) {
             GrimRevealScreen(
-                onBack = { navController.popBackStack() },
                 onNext = { navController.navigate(Screen.ScriptScreen.route) },
                 viewModel = viewModel
             )
@@ -500,6 +499,7 @@ fun ScriptScreenPreview() {
                         override suspend fun insertScript(script: com.example.clockplucker.data.local.SavedScript) {}
                         override suspend fun deleteScript(script: com.example.clockplucker.data.local.SavedScript) {}
                         override suspend fun updateScript(script: com.example.clockplucker.data.local.SavedScript) {}
+                        override suspend fun updateLastAccessed(name: String, author: String, timestamp: Long) {}
                     })) as T
                 }
             })
@@ -524,6 +524,7 @@ fun OptionsScreenPreview() {
                         override suspend fun insertScript(script: com.example.clockplucker.data.local.SavedScript) {}
                         override suspend fun deleteScript(script: com.example.clockplucker.data.local.SavedScript) {}
                         override suspend fun updateScript(script: com.example.clockplucker.data.local.SavedScript) {}
+                        override suspend fun updateLastAccessed(name: String, author: String, timestamp: Long) {}
                     })) as T
                 }
             })

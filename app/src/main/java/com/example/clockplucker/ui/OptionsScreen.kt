@@ -31,6 +31,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -55,6 +57,7 @@ fun OptionsScreen(
 ) {
     var helpText by rememberSaveable { mutableStateOf<String?>(null) }
     val scrollState = rememberScrollState()
+    val haptic = LocalHapticFeedback.current
     
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -101,7 +104,7 @@ fun OptionsScreen(
                             onClick = { viewModel.selectedMode = SelectedModes.fromInt(i) }
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-
+                        
                         when (i) {
                             2 -> {
                                 val maxAlignment = viewModel.loadedScript?.selectableCharacters?.let { chars ->
@@ -112,7 +115,10 @@ fun OptionsScreen(
 
                                 NDropdown(
                                     value = viewModel.alignmentN,
-                                    onValueChange = { viewModel.alignmentN = it },
+                                    onValueChange = {
+                                        viewModel.alignmentN = it
+                                        viewModel.selectedMode = SelectedModes.fromInt(i)
+                                    },
                                     min = 1,
                                     max = maxAlignment
                                 )
@@ -130,7 +136,10 @@ fun OptionsScreen(
 
                                 NDropdown(
                                     value = viewModel.typeN,
-                                    onValueChange = { viewModel.typeN = it },
+                                    onValueChange = {
+                                        viewModel.typeN = it
+                                        viewModel.selectedMode = SelectedModes.fromInt(i)
+                                    },
                                     min = 1,
                                     max = maxType
                                 )
@@ -252,58 +261,17 @@ fun OptionsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { viewModel.autoSentinel = false }
+                                .clickable { viewModel.autoSentinel = true }
                                 .padding(vertical = 12.dp)
                         ) {
                             RadioButton(
-                                selected = !viewModel.autoSentinel,
-                                onClick = { viewModel.autoSentinel = false }
+                                selected = viewModel.autoSentinel,
+                                onClick = { viewModel.autoSentinel = true }
                             )
                             Spacer(modifier = Modifier.width(12.dp))
-
-                            var expanded by remember { mutableStateOf(false) }
-                            Box {
-                                Text(
-                                    text = (if (viewModel.sentinelMod >= 0) "+" else "") + viewModel.sentinelMod.toString(),
-                                    modifier = Modifier
-                                        .clickable { expanded = true }
-                                        .padding(horizontal = 4.dp),
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        textDecoration = TextDecoration.Underline,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                )
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false }
-                                ) {
-                                    listOf(1, 0, -1).forEach { n ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    text = (if (n >= 0) "+" else "") + n.toString(),
-                                                    style = MaterialTheme.typography.labelMedium
-                                                )
-                                            },
-                                            onClick = {
-                                                viewModel.sentinelMod = n
-                                                viewModel.autoSentinel = false
-                                                expanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            Text(text = stringResource(R.string.sentinel_label), style = MaterialTheme.typography.bodyMedium)
+                            Text(text = stringResource(R.string.sentinel_label_automatic), style = MaterialTheme.typography.bodyMedium)
                         }
-                        
-                        HelpButton(onClick = { 
-                            helpText = when (viewModel.sentinelMod) {
-                                1 -> plusOneText
-                                -1 -> minusOneText
-                                else -> zeroText
-                            }
-                        })
+                        HelpButton(onClick = { helpText = sentinelHelpAutoText })
                     }
 
                     HorizontalDivider(
@@ -319,17 +287,72 @@ fun OptionsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { viewModel.autoSentinel = true }
+                                .clickable { viewModel.autoSentinel = !viewModel.autoSentinel }
                                 .padding(vertical = 12.dp)
                         ) {
                             RadioButton(
-                                selected = viewModel.autoSentinel,
-                                onClick = { viewModel.autoSentinel = true }
+                                selected = !viewModel.autoSentinel,
+                                onClick = { viewModel.autoSentinel = !viewModel.autoSentinel }
                             )
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = stringResource(R.string.sentinel_label_automatic), style = MaterialTheme.typography.bodyMedium)
+
+                            var expanded by remember { mutableStateOf(false) }
+                            Box {
+                                Text(
+                                    text = when (viewModel.manualSentinelModifier) {
+                                        1 -> "+1"
+                                        -1 -> "-1"
+                                        else -> "+0"
+                                    },
+                                    modifier = Modifier
+                                        .clickable { expanded = true }
+                                        .padding(horizontal = 4.dp),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        textDecoration = TextDecoration.Underline,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }
+                                ) {
+                                    listOf(
+                                        "+1" to 1,
+                                        "+0" to 0,
+                                        "-1" to -1
+                                    ).forEach { (label, mode) ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    text = label,
+                                                    style = MaterialTheme.typography.labelMedium
+                                                )
+                                            },
+                                            onClick = {
+                                                viewModel.manualSentinelModifier = mode
+                                                viewModel.autoSentinel = false
+                                                expanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                            Text(
+                                text = " " + stringResource(
+                                    R.string.sentinel_label,
+                                    if (viewModel.manualSentinelModifier == 0) "s" else ""
+                                ),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
-                        HelpButton(onClick = { helpText = sentinelHelpAutoText })
+
+                        HelpButton(onClick = {
+                            helpText = when (viewModel.manualSentinelModifier) {
+                                1 -> plusOneText
+                                -1 -> minusOneText
+                                else -> zeroText
+                            }
+                        })
                     }
                 }
             }
@@ -371,8 +394,15 @@ fun OptionsScreen(
                         }
                         Slider(
                             value = chance,
-                            onValueChange = { viewModel.surpriseChance[char] = it },
+                            onValueChange = { newValue ->
+                                val steppedValue = (newValue * 20).roundToInt() / 20f
+                                if (steppedValue != chance) {
+                                    viewModel.surpriseChance[char] = steppedValue
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                }
+                            },
                             valueRange = 0f..1f,
+                            steps = 19,
                             modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
                         )
                     }

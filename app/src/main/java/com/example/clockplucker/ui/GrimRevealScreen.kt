@@ -1,6 +1,7 @@
 package com.example.clockplucker.ui
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -75,6 +76,7 @@ import com.example.clockplucker.SelectedPriorities
 import com.example.clockplucker.data.CharAlignment
 import com.example.clockplucker.data.CharType
 import com.example.clockplucker.data.Character
+import com.example.clockplucker.data.Count
 import com.example.clockplucker.data.Player
 import com.example.clockplucker.data.RoleSolver
 import com.example.clockplucker.data.TypeCountLookup
@@ -87,7 +89,6 @@ import kotlinx.coroutines.launch
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun GrimRevealScreen(
-    onBack: () -> Unit,
     onNext: () -> Unit,
     viewModel: MainViewModel
 ) {
@@ -96,10 +97,22 @@ fun GrimRevealScreen(
     val players = viewModel.players
     val lookup = remember { TypeCountLookup() }
     val containsPope = remember(script) { script?.containsPope ?: false }
+    val sentinelModifier = remember(viewModel.autoSentinel, viewModel.manualSentinelModifier) {
+        if (viewModel.autoSentinel) Count()
+        else when (viewModel.manualSentinelModifier) {
+            1 -> Count(townsfolk = -1, outsider = 1)
+            -1 -> Count(townsfolk = 1, outsider = -1)
+            else -> Count()
+        }
+    }
 
     var showExitDialog by remember { mutableStateOf(false) }
     var showRegenDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    BackHandler {
+        showExitDialog = true
+    }
 
     // Capture all inputs that should trigger a recalculation if changed
     val stateInputs = arrayOf(
@@ -109,6 +122,7 @@ fun GrimRevealScreen(
         viewModel.selectedPriority,
         viewModel.playerPriorityToggle,
         viewModel.autoSentinel,
+        viewModel.manualSentinelModifier,
         containsPope
     )
 
@@ -154,7 +168,7 @@ fun GrimRevealScreen(
             val solver = RoleSolver(
                 players = players,
                 availableChars = characters,
-                baseCount = lookup.getBaseCounts(players.size),
+                baseCount = lookup.getBaseCounts(players.size) + sentinelModifier,
                 surpriseChances = viewModel.surpriseChance,
                 selectedPriority = viewModel.selectedPriority,
                 playerPriorityToggle = viewModel.playerPriorityToggle,
@@ -198,6 +212,21 @@ fun GrimRevealScreen(
                 TextButton(
                     onClick = {
                         showExitDialog = false
+                        // update player historyWeights
+                        val currentAssignments = assignmentsState.value
+                        if (currentAssignments != null) {
+                            viewModel.players.toList().forEachIndexed { index, player ->
+                                val assignedChar = currentAssignments[player]?.first // note that we only care about the first character, since a drunk empath didn't really get the full empath experience
+                                val wasMappedToSelected = assignedChar?.let { char ->
+                                    player.selectedChars.any { it.id == char.id }
+                                } ?: false
+
+                                val newWeight = if (wasMappedToSelected) 1 else player.historyWeight + 1
+                                // note that if a player is deleted and readded, their historyWeight won't be preserved
+                                // this is fine, as historyWeight is a hidden feature only really intended for single sessions
+                                viewModel.updatePlayer(index, player.copy(historyWeight = newWeight))
+                            }
+                        }
                         onNext()
                     }
                 ) {
@@ -227,7 +256,7 @@ fun GrimRevealScreen(
                                 val solver = RoleSolver(
                                     players = players,
                                     availableChars = characters,
-                                    baseCount = lookup.getBaseCounts(players.size),
+                                    baseCount = lookup.getBaseCounts(players.size) + sentinelModifier,
                                     surpriseChances = viewModel.surpriseChance,
                                     selectedPriority = viewModel.selectedPriority,
                                     playerPriorityToggle = viewModel.playerPriorityToggle,
@@ -608,7 +637,7 @@ fun GrimRow(
                                 Text(
                                     text = stringResource(
                                         R.string.is_the,
-                                        name.uppercase(getDefault())
+                                        character.name.asString().uppercase(getDefault())
                                     ),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = nameColor,

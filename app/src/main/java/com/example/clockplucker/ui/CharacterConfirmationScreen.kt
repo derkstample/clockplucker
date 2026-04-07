@@ -126,6 +126,7 @@ fun CharacterConfirmationScreen(
                         append(context.getString(R.string.evil))
                     }
                     append(
+                        " " +
                         context.getString(
                             R.string.character_s,
                             if (goodRemaining != 1 || evilRemaining != 1) "s" else ""
@@ -166,7 +167,7 @@ fun CharacterConfirmationScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
-                        append(context.getString(R.string.outsider_s),
+                        append(context.getString(R.string.outsider_s, ""),
                             if (oRemaining != 1) "S" else ""
                         )
                     }
@@ -176,7 +177,7 @@ fun CharacterConfirmationScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append(context.getString(R.string.minion_s),
+                        append(context.getString(R.string.minion_s, ""),
                             if (mRemaining != 1) "S" else ""
                         )
                     }
@@ -186,14 +187,13 @@ fun CharacterConfirmationScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append(context.getString(R.string.demon_s),
+                        append(context.getString(R.string.demon_s, ""),
                             if (dRemaining != 1) "S" else ""
                         )
                     }
                     append(".")
                 }
             }
-            append(context.getString(R.string.you_will_be_able_to_review_your_selection))
         }
     }
 

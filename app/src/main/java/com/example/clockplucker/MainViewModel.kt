@@ -65,7 +65,23 @@ enum class SelectedPriorities {
 }
 
 class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
-    var loadedScript by mutableStateOf<Script?>(null)
+    private var _loadedScript by mutableStateOf<Script?>(null)
+    var loadedScript: Script?
+        get() = _loadedScript
+        set(value) {
+            _loadedScript = value
+            if (value != null) {
+                value.selectableCharacters
+                    .filter { it.thinksTheyAre.isNotEmpty() }
+                    .forEach { char ->
+                        surpriseChance.putIfAbsent(char, 0.5f)
+                    }
+                if (value.containsSentinel) {
+                    autoSentinel = true
+                }
+            }
+        }
+
     val savedScripts: StateFlow<List<SavedScript>> =
         repository.allScripts.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -82,7 +98,7 @@ class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
     var typeN by mutableIntStateOf(1)
 
     var autoSentinel by mutableStateOf(false)
-    var sentinelMod by mutableIntStateOf(0)
+    var manualSentinelModifier by mutableIntStateOf(0)
 
     val surpriseChance = mutableStateMapOf<Character, Float>()
 
@@ -146,12 +162,7 @@ class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
     fun updateLastAccessed() {
         val currentScript = loadedScript ?: return
         viewModelScope.launch {
-            val savedScript = savedScripts.value.find {
-                it.name == currentScript.name && it.author == currentScript.author
-            }
-            savedScript?.let {
-                repository.update(it.copy(lastAccessed = System.currentTimeMillis()))
-            }
+            repository.updateLastAccessed(currentScript.name, currentScript.author)
         }
     }
 }

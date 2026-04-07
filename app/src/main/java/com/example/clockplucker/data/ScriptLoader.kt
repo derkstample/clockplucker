@@ -10,7 +10,7 @@ class ScriptLoader {
     fun parseScript(jsonString: String): Script? {
         val selectableCharacters = mutableListOf<Character>()
         val excludedCharacters = mutableListOf<Character>()
-        var scriptName = "Unknown Script"
+        var scriptName = "Unknown Script" // todo: string extraction, multi-language custom script support??
         var scriptAuthor = "Unknown Author"
 
         val excludedTypes = listOf(CharType.FABLED, CharType.LORIC, CharType.TRAVELLER)

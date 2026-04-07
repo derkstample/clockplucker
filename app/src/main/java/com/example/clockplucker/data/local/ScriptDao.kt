@@ -21,4 +21,7 @@ interface ScriptDao {
 
     @Update
     suspend fun updateScript(script: SavedScript)
+
+    @Query("UPDATE saved_scripts SET lastAccessed = :timestamp WHERE name = :name AND author = :author")
+    suspend fun updateLastAccessed(name: String, author: String, timestamp: Long = System.currentTimeMillis())
 }
