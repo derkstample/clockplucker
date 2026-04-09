@@ -3,10 +3,10 @@
     <string name="option_selection_mode">SELECTION OPTIONS</string>
     <string name="mode_no_restrictions">No Restrictions</string>
     <string name="mode_no_restrictions_desc">Players can select any number of preferred characters.</string>
-    <string name="mode_n_alignment">n Of Each Alignment</string>
-    <string name="mode_n_alignment_desc">Players can select up to n character(s) of each alignment (Good / Evil).</string>
-    <string name="mode_n_type">n Of Each Type</string>
-    <string name="mode_n_type_desc">Players can select up to n character(s) of each type (Townsfolk / Outsider / Minion / Demon).</string>
+    <string name="mode_n_alignment">%1$s Of Each Alignment</string>
+    <string name="mode_n_alignment_desc">Players can select up to %1$s character%2$s of each alignment (Good / Evil).</string>
+    <string name="mode_n_type">%1$s Of Each Type</string>
+    <string name="mode_n_type_desc">Players can select up to %1$s character%2$s of each type (Townsfolk / Outsider / Minion / Demon).</string>
     <string name="n_alignment_dropdown">" Of Each Alignment"</string>
     <string name="n_type_dropdown">" Of Each Type"</string>
     <string name="option_storyteller_priorities">STORYTELLER PRIORITIES</string>
@@ -74,7 +74,7 @@
     <string name="you_may_select">"You may select "</string>
     <string name="more">" more "</string>
     <string name="and">" and "</string>
-    <string name="character_s"> character%1$s.</string>
+    <string name="character_s"> character%1$s</string>
     <string name="you_will_be_able_to_review_your_selection">" You will be able to review your selection."</string>
     <string name="character_restricted">Character Restricted</string>
     <string name="character_restricted_desc">This character\'s ability depends on its player thinking they are a different character. For this reason, you cannot select this character as preferred.</string>
@@ -112,4 +112,7 @@
     <string name="no_characters_selected">No characters selected</string>
     <string name="prioritized_alignment">Prioritized Alignment:</string>
     <string name="prioritized_type">Prioritized Type:</string>
+    <string name="no_saved_scripts">No saved scripts. Add a new script to get started!</string>
+    <string name="alchemist_settings">ALCHEMIST ABILITY</string>
+    <string name="alchemist_settings_desc">This script contains an Alchemist. If the Alchemist may have a minion ability that modifies the character setup. This setting allows you to force any generated Alchemist to have a specific minion ability.</string>
 </resources>

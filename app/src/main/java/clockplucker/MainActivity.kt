@@ -1,0 +1,537 @@
+package clockplucker
+
+//    Copyright 2026 Derek Rodriguez
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+
+import android.annotation.SuppressLint
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import clockplucker.data.local.AppDatabase
+import clockplucker.data.local.ScriptRepository
+import clockplucker.ui.CharacterConfirmationScreen
+import clockplucker.ui.CharacterSelectScreen
+import clockplucker.ui.GrimRevealScreen
+import clockplucker.ui.OptionsScreen
+import clockplucker.ui.PlayerListScreen
+import clockplucker.ui.PlayerReadyScreen
+import clockplucker.ui.ScriptScreen
+import clockplucker.ui.theme.ClockPluckerTheme
+import com.example.clockplucker.R
+import kotlinx.coroutines.delay
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val database = AppDatabase.getDatabase(applicationContext)
+        val repository = ScriptRepository(database.scriptDao())
+
+        val viewModel: MainViewModel by viewModels {
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return MainViewModel(repository) as T
+                }
+            }
+        }
+
+        setContent {
+            ClockPluckerTheme {
+                ClockPluckerApp(viewModel)
+            }
+        }
+    }
+}
+
+sealed class Screen(val route: String) {
+    object ScriptScreen : Screen("script_screen")
+    object OptionsScreen : Screen("options_screen")
+    object PlayerListScreen : Screen("player_list_screen")
+    object PlayerReadyScreen : Screen("player_ready_screen")
+    object CharacterSelectScreen : Screen("character_select_screen")
+    object CharacterConfirmationScreen : Screen("character_confirmation_screen")
+    object GrimRevealScreen : Screen("grim_reveal_screen")
+}
+
+@Composable
+fun ClockPluckerApp(viewModel: MainViewModel) {
+    val navController = rememberNavController()
+    var currentPlayerIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    NavHost(navController = navController, startDestination = Screen.ScriptScreen.route) {
+        composable(Screen.ScriptScreen.route) {
+            ScriptScreen(
+                onNext = { 
+                    viewModel.updateLastAccessed()
+                    navController.navigate(Screen.OptionsScreen.route) 
+                },
+                viewModel = viewModel
+            )
+        }
+        composable(Screen.OptionsScreen.route) {
+            OptionsScreen(
+                onBack = {
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(Screen.ScriptScreen.route)
+                    }
+                },
+                onNext = { navController.navigate(Screen.PlayerListScreen.route) },
+                viewModel = viewModel
+            )
+        }
+        composable(Screen.PlayerListScreen.route) {
+            PlayerListScreen(
+                onBack = {
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(Screen.OptionsScreen.route)
+                    }
+                },
+                onNext = {
+                    currentPlayerIndex = 0
+                    navController.navigate(Screen.PlayerReadyScreen.route)
+                },
+                viewModel = viewModel
+            )
+        }
+        composable(Screen.PlayerReadyScreen.route) {
+            PlayerReadyScreen(
+                onBack = { navController.popBackStack() },
+                onNext = {
+                    navController.navigate(Screen.CharacterSelectScreen.route)
+                },
+                progress = currentPlayerIndex,
+                viewModel = viewModel
+            )
+        }
+        composable(Screen.CharacterSelectScreen.route) {
+            CharacterSelectScreen(
+                onBack = { navController.popBackStack() },
+                onNext = { selected ->
+                    val currentPlayer = viewModel.players[currentPlayerIndex]
+                    viewModel.updatePlayer(
+                        currentPlayerIndex,
+                        currentPlayer.copy(selectedChars = selected)
+                    )
+                    navController.navigate(Screen.CharacterConfirmationScreen.route)
+                },
+                viewModel = viewModel,
+                playerIndex = currentPlayerIndex
+            )
+        }
+        composable(Screen.CharacterConfirmationScreen.route) {
+            CharacterConfirmationScreen(
+                onBack = { navController.popBackStack() },
+                onNext = {
+                    if (currentPlayerIndex == viewModel.players.size - 1) {
+                        navController.navigate(Screen.GrimRevealScreen.route)
+                    } else {
+                        currentPlayerIndex++
+                        navController.navigate(Screen.PlayerReadyScreen.route) {
+                            popUpTo(Screen.PlayerReadyScreen.route) { inclusive = true }
+                        }
+                    }
+                },
+                viewModel = viewModel,
+                playerIndex = currentPlayerIndex
+            )
+        }
+        composable(Screen.GrimRevealScreen.route) {
+            GrimRevealScreen(
+                onNext = { navController.navigate(Screen.ScriptScreen.route) },
+                viewModel = viewModel
+            )
+        }
+    }
+}
+
+@Composable
+fun SectionHeader(text: String, modifier: Modifier = Modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+    ) {
+        if (text.isNotEmpty()) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+        }
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
+    }
+}
+
+@Composable
+fun HelpButton(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .size(32.dp)
+            .clip(shape = CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = stringResource(R.string.help),
+            modifier = Modifier.size(20.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun NDropdown(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    min: Int,
+    max: Int
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+
+    Box {
+        Text(
+            text = value.toString(),
+            modifier = Modifier
+                .clickable { expanded = true }
+                .padding(horizontal = 4.dp),
+            style = MaterialTheme.typography.labelMedium.copy(
+                textDecoration = TextDecoration.Underline,
+                color = MaterialTheme.colorScheme.primary
+            )
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            (min..max).forEach { n ->
+                DropdownMenuItem(
+                    text = { Text(n.toString(), style = MaterialTheme.typography.labelMedium) },
+                    onClick = {
+                        onValueChange(n)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@SuppressLint("FrequentlyChangingValue")
+@Composable
+fun Modifier.drawStableVerticalScrollbar(
+    state: LazyListState,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+): Modifier {
+    // 1. Height Tracking Logic
+    val itemHeights = remember { mutableStateMapOf<Int, Int>() }
+
+    LaunchedEffect(state) {
+        snapshotFlow { state.layoutInfo.visibleItemsInfo }
+            .collect { visibleItems ->
+                visibleItems.forEach { itemHeights[it.index] = it.size }
+            }
+    }
+
+    // 2. Fading Logic
+    val alpha = remember { Animatable(0f) }
+
+    LaunchedEffect(state.firstVisibleItemIndex, state.firstVisibleItemScrollOffset) {
+        // Show the scrollbar immediately when a scroll change is detected
+        alpha.snapTo(1f)
+        // Wait for 1 second of inactivity
+        delay(800L)
+        // Fade out over 500ms
+        alpha.animateTo(0f, animationSpec = tween(500))
+    }
+
+    return this.drawWithContent {
+        drawContent()
+
+        val totalItemsCount = state.layoutInfo.totalItemsCount
+        if (totalItemsCount <= 1 || alpha.value == 0f) return@drawWithContent
+
+        // Calculate geometry
+        val averageHeight = if (itemHeights.isEmpty()) 0f else itemHeights.values.average().toFloat()
+        val estimatedTotalHeight = (0 until totalItemsCount).sumOf {
+            itemHeights[it] ?: averageHeight.toInt()
+        }.toFloat()
+
+        if (estimatedTotalHeight <= size.height) return@drawWithContent
+
+        val scrolledDistance = (0 until state.firstVisibleItemIndex).sumOf {
+            itemHeights[it] ?: averageHeight.toInt()
+        } + state.firstVisibleItemScrollOffset
+
+        val viewportHeight = size.height
+        val scrollbarHeight = (viewportHeight / estimatedTotalHeight) * viewportHeight
+        val scrollbarOffsetY = (scrolledDistance / estimatedTotalHeight) * viewportHeight
+
+        // 3. Draw with the animated alpha
+        drawRoundRect(
+            color = color.copy(alpha = color.alpha * alpha.value),
+            topLeft = Offset(size.width - 8.dp.toPx(), scrollbarOffsetY),
+            size = Size(4.dp.toPx(), scrollbarHeight),
+            cornerRadius = CornerRadius(2.dp.toPx())
+        )
+    }
+}
+
+@SuppressLint("FrequentlyChangingValue")
+@Composable
+fun Modifier.drawStableVerticalScrollbar(
+    state: ScrollState,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+): Modifier {
+    val alpha = remember { Animatable(0f) }
+
+    LaunchedEffect(state.value) {
+        alpha.snapTo(1f)
+        delay(800L)
+        alpha.animateTo(0f, animationSpec = tween(500))
+    }
+
+    return this.drawWithContent {
+        drawContent()
+
+        if (alpha.value == 0f) return@drawWithContent
+
+        val viewportHeight = size.height
+        val contentHeight = state.maxValue + viewportHeight
+
+        if (contentHeight <= viewportHeight) return@drawWithContent
+
+        val scrollbarHeight = (viewportHeight / contentHeight) * viewportHeight
+        val scrollbarOffsetY = (state.value / contentHeight) * viewportHeight
+
+        drawRoundRect(
+            color = color.copy(alpha = color.alpha * alpha.value),
+            topLeft = Offset(size.width - 8.dp.toPx(), scrollbarOffsetY),
+            size = Size(4.dp.toPx(), scrollbarHeight),
+            cornerRadius = CornerRadius(2.dp.toPx())
+        )
+    }
+}
+
+@Composable
+fun NavigationBar(
+    progress: Int,
+    total: Int,
+    modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
+    onNext: (() -> Unit)? = null,
+    nextEnabled: Boolean = true
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.primaryContainer,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .height(48.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (onBack != null) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(MaterialTheme.shapes.extraLarge)
+                        .clickable { onBack() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = stringResource(R.string.back)
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            Row(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxHeight(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(total) { index ->
+                    val isFilled = index < progress
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(
+                                color = if (isFilled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
+                                    alpha = 0.5f
+                                ),
+                                shape = CircleShape
+                            )
+                    )
+                }
+            }
+
+            if (onNext != null) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(MaterialTheme.shapes.extraLarge)
+                        .clickable(enabled = nextEnabled) { onNext() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = stringResource(R.string.next),
+                        tint = if (nextEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun ScriptScreenPreview() {
+    ClockPluckerTheme {
+        ScriptScreen(
+            onNext = {},
+            viewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return MainViewModel(ScriptRepository(
+                        object : clockplucker.data.local.ScriptDao {
+                            override fun getAllScripts() =
+                                kotlinx.coroutines.flow.flowOf(emptyList<clockplucker.data.local.SavedScript>())
+
+                            override suspend fun insertScript(script: clockplucker.data.local.SavedScript) {}
+                            override suspend fun deleteScript(script: clockplucker.data.local.SavedScript) {}
+                            override suspend fun updateScript(script: clockplucker.data.local.SavedScript) {}
+                            override suspend fun updateLastAccessed(
+                                name: String,
+                                author: String,
+                                timestamp: Long
+                            ) {
+                            }
+                        })) as T
+                }
+            })
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun OptionsScreenPreview() {
+    ClockPluckerTheme {
+        OptionsScreen(
+            onBack = {},
+            onNext = {},
+            viewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return MainViewModel(ScriptRepository(
+                        object :
+                            clockplucker.data.local.ScriptDao {
+                            override fun getAllScripts() =
+                                kotlinx.coroutines.flow.flowOf(emptyList<clockplucker.data.local.SavedScript>())
+
+                            override suspend fun insertScript(script: clockplucker.data.local.SavedScript) {}
+                            override suspend fun deleteScript(script: clockplucker.data.local.SavedScript) {}
+                            override suspend fun updateScript(script: clockplucker.data.local.SavedScript) {}
+                            override suspend fun updateLastAccessed(
+                                name: String,
+                                author: String,
+                                timestamp: Long
+                            ) {
+                            }
+                        })) as T
+                }
+            })
+        )
+    }
+}

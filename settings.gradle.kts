@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ClockPlucker"
+rootProject.name = "Clock Plucker"
 include(":app")
