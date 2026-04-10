@@ -87,7 +87,6 @@ import clockplucker.ui.PlayerListScreen
 import clockplucker.ui.PlayerReadyScreen
 import clockplucker.ui.ScriptScreen
 import clockplucker.ui.theme.ClockPluckerTheme
-import com.example.clockplucker.R
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {

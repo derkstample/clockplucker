@@ -30,7 +30,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import com.example.clockplucker.R
+import clockplucker.R
 
 data class Character(
     val id: String,

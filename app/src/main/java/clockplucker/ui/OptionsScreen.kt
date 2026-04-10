@@ -60,7 +60,7 @@ import clockplucker.HelpButton
 import clockplucker.MainViewModel
 import clockplucker.NDropdown
 import clockplucker.NavigationBar
-import com.example.clockplucker.R
+import clockplucker.R
 import clockplucker.SectionHeader
 import clockplucker.SelectedModes
 import clockplucker.SelectedPriorities

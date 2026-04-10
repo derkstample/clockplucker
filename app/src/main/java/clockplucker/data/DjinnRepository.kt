@@ -15,7 +15,7 @@ package clockplucker.data
 //    limitations under the License.
 
 import androidx.annotation.StringRes
-import com.example.clockplucker.R
+import clockplucker.R
 
 object DjinnRepository {
     private val djinnData = mapOf(

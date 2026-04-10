@@ -75,7 +75,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import clockplucker.MainViewModel
 import clockplucker.NavigationBar
-import com.example.clockplucker.R
+import clockplucker.R
 import clockplucker.SectionHeader
 import clockplucker.SelectedModes
 import clockplucker.data.CharAlignment

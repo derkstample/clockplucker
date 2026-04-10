@@ -14,7 +14,7 @@ package clockplucker.data
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-import com.example.clockplucker.R
+import clockplucker.R
 
 object CharacterRepository {
     private val characterData = mapOf(

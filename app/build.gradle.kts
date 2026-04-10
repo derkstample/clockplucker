@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.clockplucker"
+    namespace = "clockplucker"
     compileSdk = 36
 
     defaultConfig {

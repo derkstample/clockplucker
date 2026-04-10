@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.example.clockplucker.R
+import clockplucker.R
 
 val DumbledoreFont = FontFamily(Font(R.font.dumbledor3))
 val SortsMillGoudyFont = FontFamily(Font(R.font.sorts_mill_goudy))

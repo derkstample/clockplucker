@@ -64,7 +64,7 @@ import clockplucker.MainViewModel
 import clockplucker.NavigationBar
 import clockplucker.SectionHeader
 import clockplucker.SelectedModes
-import com.example.clockplucker.R
+import clockplucker.R
 import clockplucker.data.CharAlignment
 import clockplucker.data.CharType
 import clockplucker.data.Character

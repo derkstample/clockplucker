@@ -84,7 +84,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import clockplucker.MainViewModel
-import com.example.clockplucker.R
+import clockplucker.R
 import clockplucker.SectionHeader
 import clockplucker.SelectedPriorities
 import clockplucker.data.CharAlignment

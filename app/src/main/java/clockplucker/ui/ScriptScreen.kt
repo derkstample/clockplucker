@@ -77,7 +77,7 @@ import androidx.compose.ui.unit.dp
 import clockplucker.drawStableVerticalScrollbar
 import clockplucker.MainViewModel
 import clockplucker.NavigationBar
-import com.example.clockplucker.R
+import clockplucker.R
 import clockplucker.SectionHeader
 import clockplucker.data.Script
 import clockplucker.data.ScriptLoader

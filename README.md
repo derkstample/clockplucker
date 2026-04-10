@@ -1,4 +1,5 @@
-# <img alt="" height="24" src="assets/app_icon.png" width="24"/> Clock Plucker
+<img alt="" height="614" src="assets/clockpluckertoken.png" width="614"/>
+# Clock Plucker
 
 Clock Plucker is a utility app for Storytellers of the social deduction game **Blood on the Clocktower**. It streamlines the process of bagging a script and enables the Gardener Loric to be player-driven (that is, enables players to request specific characters) by intelligently assigning characters based on player preferences while strictly adhering to all setup rules and character interactions.
 
@@ -11,15 +12,15 @@ Clock Plucker is a utility app for Storytellers of the social deduction game **B
     - **Alignment/Type Priority**: Prioritize giving players specific types (Townsfolk, Minion, etc.) or alignments.
     - **Weighted Selection**: Factors in player history and preferences to ensure a fair distribution of roles over time.
 - **Script Support**: Import custom scripts in standard JSON format. Supports official characters and "bootlegger" custom content.
-- **Complex Logic Handling**: Built-in support for tricky character interactions like the **Marionette** (ensuring they sit next to their Demon), **Legion**, **Huntsman/Damsel** dependencies, **Djinn** jinxes, and more.
-- **Modern UI**: A clean, step-by-step Jetpack Compose interface for managing players, choosing scripts, and revealing the Grimoire.
+- **Complex Logic Handling**: Support for various character interactions like the **Marionette** (ensuring they sit next to their Demon), **Legion**, **Huntsman/Damsel** dependencies, **Djinn** jinxes, and more.
+- **Modern UI**: A clean, step-by-step Jetpack Compose interface for choosing scripts, managing players, and revealing the Grimoire.
 
 ## <img alt="" height="24" src="assets/icon_engineer.png" width="24"/> Technical Implementations
 
 ### Role Solver Engine
 Clock Plucker utilizes the **Choco Solver** library to assign characters to players. It models the role assignment problem as a Constraint Satisfaction Problem (CSP).
 - **Constraints**: Implements rules for character counts, mutual exclusions (hard jinxes), and conditional setup modifiers.
-- **Optimization**: Maximizes a "profit matrix" derived from player preferences and historical data to find the most satisfying valid assignment.
+- **Optimization**: Maximizes a profit matrix derived from player preferences and historical data to find the most satisfying valid assignment.
 - **Deception Logic**: Correctly handles characters who "think" they are someone else (e.g., Drunk, Lunatic, Marionette) by managing "reserved" character slots that don't physically exist in the bag but affect the player's perceived identity.
 
 ### Data Architecture

@@ -80,7 +80,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import clockplucker.MainViewModel
 import clockplucker.NavigationBar
-import com.example.clockplucker.R
+import clockplucker.R
 import clockplucker.SelectedPriorities
 import clockplucker.data.CharAlignment
 import clockplucker.data.CharType
