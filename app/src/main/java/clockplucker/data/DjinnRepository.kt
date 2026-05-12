@@ -2,20 +2,43 @@ package clockplucker.data
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import androidx.annotation.StringRes
 import clockplucker.R
+
+// I am fully convinced that there are many more jinxes that have yet to be
+// added to the game. Most of these are extremely niche interactions, but
+// since this app is aiming to work from TB to whale buffet, I'll document
+// whatever weird interactions I think should have a jinx.
+
+// should Alchemist-Boffin-Alchemist be allowed?
+// Does a Hermit-Damsel satisfy the Huntsman's dependency?
+// Can a Boffin-Balloonist add an outsider?
+// Does a Boffin-Bounty Hunter make an evil townsfolk?
+// Boffin-Alchemist-Boffin-Alchemist-Boffin..... is.. technically allowed?
+// Surely the Boffin cannot have the Lunatic ability
+// Can the Lunatic think they are the Lil' Monsta (meaning they think they are a minion)?
+// Lil' Monsta works strangely with Lunatic or Hermit-Lunatic:
+//      normally, they should think they are a minion. Should the real minion see who they choose?
+//      Should they be able to think they are minions not in play?
+//      Should they get demon bluffs?
+//      Should a Lunatic-Lil' Monsta-Vizier mean the town learns there is a Vizier in play?
+// Can both a Lunatic and a Hermit-Lunatic be in play at once?
+// Lil' Monsta and Summoner: the additional minion is either created once summoned or not, either
+//      way it's not during setup.
+// Alchemist-Summoner must prevent there from being a real Summoner, else night order shenanigans
 
 object DjinnRepository {
     private val djinnData = mapOf(
@@ -52,7 +75,7 @@ object DjinnRepository {
         Pair("heretic", "widow") to R.string.jinx_heretic_widow,
         Pair("plaguedoctor", "baron") to R.string.jinx_plaguedoctor_baron,
         Pair("plaguedoctor", "boomdandy") to R.string.jinx_plaguedoctor_boomdandy,
-        Pair("plaguedoctor", "evil twin") to R.string.jinx_plaguedoctor_evil_twin,
+        Pair("plaguedoctor", "eviltwin") to R.string.jinx_plaguedoctor_eviltwin,
         Pair("plaguedoctor", "fearmonger") to R.string.jinx_plaguedoctor_fearmonger,
         Pair("plaguedoctor", "goblin") to R.string.jinx_plaguedoctor_goblin,
         Pair("plaguedoctor", "marionette") to R.string.jinx_plaguedoctor_marionette,
@@ -92,7 +115,7 @@ object DjinnRepository {
         Pair("summoner", "hatter") to R.string.jinx_summoner_hatter,
         Pair("summoner", "kazali") to R.string.jinx_summoner_kazali,
         Pair("summoner", "lordoftyphon") to R.string.jinx_summoner_lordoftyphon,
-        Pair("summoner", "pithag") to R.string.jinx_summoner_pithag,
+        Pair("summoner", "zpithag") to R.string.jinx_summoner_pithag,
         Pair("summoner", "poppygrower") to R.string.jinx_summoner_poppygrower,
         Pair("summoner", "preacher") to R.string.jinx_summoner_preacher,
         Pair("summoner", "pukka") to R.string.jinx_summoner_pukka,

@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Djinn Jinxes -->
     <string name="jinx_alchemist_boffin">If the Alchemist has the Boffin ability, the Alchemist does not learn what ability the Demon has.</string>
     <string name="jinx_alchemist_marionette">An Alchemist-Marionette has no Marionette ability &amp; the Marionette is in play.</string>
     <string name="jinx_alchemist_mastermind">An Alchemist-Mastermind has no Mastermind ability &amp; the Mastermind is not-in-play.</string>
@@ -33,7 +33,7 @@
     <string name="jinx_heretic_widow">Only 1 jinxed character can be in play.</string>
     <string name="jinx_plaguedoctor_baron">If the Storyteller would gain the Baron ability, up to two players become Outsiders.</string>
     <string name="jinx_plaguedoctor_boomdandy">If the Storyteller would gain the Boomdandy ability, a player becomes the Boomdandy.</string>
-    <string name="jinx_plaguedoctor_evil_twin">If the Storyteller would gain the Evil Twin ability, a player becomes the Evil Twin.</string>
+    <string name="jinx_plaguedoctor_eviltwin">If the Storyteller would gain the Evil Twin ability, a player becomes the Evil Twin.</string>
     <string name="jinx_plaguedoctor_fearmonger">If the Storyteller would gain the Fearmonger ability, a Minion gains it, and learns this.</string>
     <string name="jinx_plaguedoctor_goblin">If the Storyteller would gain the Goblin ability, a Minion gains it, and learns this.</string>
     <string name="jinx_plaguedoctor_marionette">If the Storyteller would gain the Marionette ability, one of the Demon\'s good neighbors becomes the Marionette.</string>
@@ -77,7 +77,7 @@
     <string name="jinx_summoner_poppygrower">If the Poppy Grower is alive on the 3rd night, the Summoner chooses which Demon but not which player.</string>
     <string name="jinx_summoner_preacher">If the living Summoner has no ability, the Storyteller has the Summoner ability.</string>
     <string name="jinx_summoner_pukka">The Summoner may summon a Pukka on the 2nd night instead of the 3rd.</string>
-    <string name="jinx_summoner_zombuul">If the Summoner summons a dead player into the Zombuul, the Zombuul has already \"died once\".</string>
+    <string name="jinx_summoner_zombuul">If the Summoner summons a dead player into the Zombuul, the Zombuul has already &quot;died once&quot;.</string>
     <string name="jinx_vizier_alsaahir">The Storyteller doesn\'t declare the Vizier is in play.</string>
     <string name="jinx_vizier_courtier">If the Vizier loses their ability, they learn this, and cannot die during the day.</string>
     <string name="jinx_vizier_fearmonger">The Vizier wakes with the Fearmonger, learns who they choose and cannot choose to immediately execute that player.</string>
@@ -117,7 +117,7 @@
     <string name="jinx_lilmonsta_vizier">If the Vizier is babysitting Lil\' Monsta, they die when executed.</string>
     <string name="jinx_lleech_mastermind">If the Mastermind is alive and the Lleech host dies by execution, the Lleech lives but loses their ability.</string>
     <string name="jinx_lleech_slayer">If the Slayer slays the Lleech host, the host dies.</string>
-    <string name="jinx_riot_atheist">During a riot, if the Storyteller is nominated, players vote. If they are \"about to die\", the game ends. If not, they nominate again.</string>
+    <string name="jinx_riot_atheist">During a riot, if the Storyteller is nominated, players vote. If they are &quot;about to die&quot;, the game ends. If not, they nominate again.</string>
     <string name="jinx_riot_banshee">Each night*, Riot chooses an alive good player (different to previous nights): a chosen Banshee dies &amp; gains their ability.</string>
     <string name="jinx_riot_exorcist">If Riot nominates and executes the Exorcist-chosen player, good wins.</string>
     <string name="jinx_riot_farmer">Each night*, Riot chooses an alive good player (different to previous nights): a chosen Farmer uses their ability but does not die.</string>

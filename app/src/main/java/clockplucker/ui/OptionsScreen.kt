@@ -2,22 +2,25 @@ package clockplucker.ui
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -41,6 +44,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,7 +58,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import clockplucker.HelpButton
 import clockplucker.MainViewModel
@@ -66,6 +69,8 @@ import clockplucker.SelectedModes
 import clockplucker.SelectedPriorities
 import clockplucker.data.CharAlignment
 import clockplucker.data.CharType
+import clockplucker.data.Count
+import clockplucker.data.DjinnRepository
 import clockplucker.drawStableVerticalScrollbar
 import clockplucker.ui.theme.EvilPrimary
 import kotlin.collections.set
@@ -79,7 +84,7 @@ fun OptionsScreen(
 ) {
     var helpText by rememberSaveable { mutableStateOf<String?>(null) }
     val scrollState = rememberScrollState()
-    
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -131,6 +136,11 @@ fun OptionsScreen(
                 onHelpTextChange = { helpText = it }
             )
 
+            AlchemistSelectionRow(
+                viewModel = viewModel,
+                onHelpTextChange = { helpText = it }
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -159,7 +169,14 @@ fun SelectionOptionsRow(
     val modes = listOf(
         stringResource(R.string.mode_no_restrictions) to stringResource(R.string.mode_no_restrictions_desc),
         stringResource(R.string.mode_n_alignment, viewModel.alignmentN) to stringResource(R.string.mode_n_alignment_desc, viewModel.alignmentN, if (viewModel.alignmentN > 1) "s" else ""),
-        stringResource(R.string.mode_n_type, viewModel.typeN) to stringResource(R.string.mode_n_type_desc, viewModel.typeN, if (viewModel.typeN > 1) "s" else "")
+        stringResource(R.string.mode_n_type, viewModel.typeN) to stringResource(R.string.mode_n_type_desc, viewModel.typeN, if (viewModel.typeN > 1) "s" else ""),
+        stringResource(R.string.mode_specify) to stringResource(R.string.mode_specify_desc,
+            viewModel.specifyN.townsfolk,
+            viewModel.specifyN.outsider, if (viewModel.specifyN.outsider > 1) "s" else "",
+            viewModel.specifyN.minion, if (viewModel.specifyN.minion > 1) "s" else "",
+            viewModel.specifyN.demon, if (viewModel.specifyN.demon > 1) "s" else ""
+            ),
+        stringResource(R.string.mode_none) to stringResource(R.string.mode_none_desc)
     )
 
     modes.forEachIndexed { index, pair ->
@@ -189,7 +206,7 @@ fun SelectionOptionsRow(
                             val good = chars.count { it.alignment == CharAlignment.GOOD }
                             val evil = chars.count { it.alignment == CharAlignment.EVIL }
                             maxOf(good, evil)
-                        } ?: 10 // loadedScript should never be null here, but failsafe regardless
+                        } ?: 1 // loadedScript should never be null here, but failsafe regardless
 
                         NDropdown(
                             value = viewModel.alignmentN,
@@ -213,7 +230,7 @@ fun SelectionOptionsRow(
                             val minion = chars.count { it.type == CharType.MINION }
                             val demon = chars.count { it.type == CharType.DEMON }
                             maxOf(townsfolk, maxOf(outsider, maxOf(minion, demon)))
-                        } ?: 10
+                        } ?: 1
 
                         NDropdown(
                             value = viewModel.typeN,
@@ -230,6 +247,84 @@ fun SelectionOptionsRow(
                         Text(text = stringResource(R.string.n_type_dropdown), style = MaterialTheme.typography.bodyMedium)
                     }
 
+                    4 -> {
+                        val maxCount = viewModel.loadedScript?.selectableCharacters?.let { chars ->
+                            val townsfolk = chars.count { it.type == CharType.TOWNSFOLK }
+                            val outsider = chars.count { it.type == CharType.OUTSIDER }
+                            val minion = chars.count { it.type == CharType.MINION }
+                            val demon = chars.count { it.type == CharType.DEMON }
+                            Count(townsfolk, outsider, minion, demon)
+                        } ?: Count(1,1,1,1)
+
+                        FlowRow (
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                NDropdown(
+                                    value = viewModel.specifyN.townsfolk,
+                                    onValueChange = {
+                                        viewModel.specifyN = viewModel.specifyN.copy(townsfolk = it)
+                                        viewModel.selectedMode = SelectedModes.SPECIFY
+                                    },
+                                    min = 0,
+                                    max = maxCount.townsfolk
+                                )
+                                Text(text = stringResource(R.string.townsfolk) + ",", style = MaterialTheme.typography.bodyMedium)
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                NDropdown(
+                                    value = viewModel.specifyN.outsider,
+                                    onValueChange = {
+                                        viewModel.specifyN = viewModel.specifyN.copy(outsider = it)
+                                        viewModel.selectedMode = SelectedModes.SPECIFY
+                                    },
+                                    min = 0,
+                                    max = maxCount.outsider
+                                )
+                                Text(text = stringResource(R.string.outsider_s, if (viewModel.specifyN.outsider != 1) "s," else ","), style = MaterialTheme.typography.bodyMedium)
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                NDropdown(
+                                    value = viewModel.specifyN.minion,
+                                    onValueChange = {
+                                        viewModel.specifyN = viewModel.specifyN.copy(minion = it)
+                                        viewModel.selectedMode = SelectedModes.SPECIFY
+                                    },
+                                    min = 0,
+                                    max = maxCount.minion
+                                )
+                                Text(text = stringResource(R.string.minion_s, if (viewModel.specifyN.minion != 1) "s," else ","), style = MaterialTheme.typography.bodyMedium)
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                NDropdown(
+                                    value = viewModel.specifyN.demon,
+                                    onValueChange = {
+                                        viewModel.specifyN = viewModel.specifyN.copy(demon = it)
+                                        viewModel.selectedMode = SelectedModes.SPECIFY
+                                    },
+                                    min = 0,
+                                    max = maxCount.demon
+                                )
+                                Text(text = stringResource(R.string.demon_s, if (viewModel.specifyN.demon != 1) "s" else ""), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
+
                     else -> {
                         Text(text = pair.first, style = MaterialTheme.typography.bodyMedium)
                     }
@@ -237,7 +332,7 @@ fun SelectionOptionsRow(
             }
             HelpButton(onClick = { onHelpTextChange(pair.second) })
         }
-        if (index < 2) {
+        if (index < modes.size - 1) {
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 16.dp),
                 color = MaterialTheme.colorScheme.outlineVariant
@@ -524,88 +619,160 @@ fun SurpriseCharactersRow(
     }
 }
 
-// todo: get around to implementing alchemist selection
 @Composable
 fun AlchemistSelectionRow(
     viewModel: MainViewModel,
-    onHelpTextChange: () -> Unit
+    onHelpTextChange: (String) -> Unit
 ) {
     if (viewModel.loadedScript?.containsAlchemist == true) {
         val minions = viewModel.loadedScript?.selectableCharacters?.filter { it.type == CharType.MINION } ?: emptyList()
 
-        Spacer(modifier = Modifier.height(16.dp))
-        SectionHeader(stringResource(R.string.alchemist_settings))
+        val selectedMinion = minions.getOrNull(viewModel.alchemistAbilityIndex) ?: minions.firstOrNull() ?: return
+        val alchemistJinx = DjinnRepository.getJinxAbility("alchemist", selectedMinion.id)?.let { stringResource(it) }
 
-        val alchemistSummonerText = stringResource(R.string.alchemist_settings_desc)
-        val selectedMinion = minions.getOrNull(viewModel.alchemistAbilityIndex)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        LaunchedEffect(alchemistJinx) {
+            viewModel.updateAlchemistJinx(alchemistJinx)
+        }
+
+        val alchemistAbilityText = alchemistJinx ?: selectedMinion.ability.asString()
+
+        val alchemistAbilityDesc = stringResource(R.string.alchemist_settings_desc, selectedMinion.name.asAnnotatedString())
+        val alchemistDuplicateText = stringResource(R.string.alchemist_duplicate_switch_desc, selectedMinion.name.asAnnotatedString())
+
+        SectionHeader(stringResource(R.string.alchemist_settings))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 12.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 var expanded by remember { mutableStateOf(false) }
-                Box {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { expanded = true }
-                    ) {
-                        Image(
-                            painter = painterResource(selectedMinion!!.icon),
-                            contentDescription = selectedMinion.name.asString(),
-                            modifier = Modifier
-                                .size(72.dp)
-                                .aspectRatio(1f)
-                        )
-                        Text(
-                            text = selectedMinion.name.asAnnotatedString().toUpperCase(),
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                textDecoration = TextDecoration.Underline,
-                                color = EvilPrimary
-                            )
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        minions.forEach { minion ->
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Image(
-                                            painter = painterResource(minion.icon),
-                                            contentDescription = minion.name.asString(),
-                                            modifier = Modifier
-                                                .size(72.dp)
-                                                .aspectRatio(1f)
-                                        )
-                                        Text(
-                                            text = minion.name.asAnnotatedString().toUpperCase(),
-                                            style = MaterialTheme.typography.labelMedium.copy(
-                                                color = EvilPrimary
-                                            ),
-                                            modifier = Modifier.padding(end = 12.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    viewModel.alchemistAbilityIndex = minions.indexOf(minion)
-                                    expanded = false
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(MaterialTheme.shapes.large)
+                        .clickable { expanded = true }
+                ) {
+                    Column {
+                        Box {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(
+                                    painter = painterResource(selectedMinion.icon),
+                                    contentDescription = selectedMinion.name.asString(),
+                                    modifier = Modifier
+                                        .size(72.dp)
+                                        .aspectRatio(1f)
+                                )
+                                Text(
+                                    text = selectedMinion.name.asAnnotatedString(),
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        textDecoration = TextDecoration.Underline,
+                                        color = EvilPrimary
+                                    )
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                minions.forEach { minion ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(minion.icon),
+                                                    contentDescription = minion.name.asString(),
+                                                    modifier = Modifier
+                                                        .size(72.dp)
+                                                        .aspectRatio(1f)
+                                                )
+                                                Text(
+                                                    text = minion.name.asAnnotatedString(),
+                                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                                        color = EvilPrimary
+                                                    ),
+                                                    modifier = Modifier.padding(end = 12.dp)
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            viewModel.updateAlchemistAbilityIndex(minions.indexOf(minion))
+                                            expanded = false
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         }
+                        Text(
+                            text = alchemistAbilityText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(8.dp)
+                        )
                     }
                 }
+                HelpButton(onClick = { onHelpTextChange(alchemistAbilityDesc) })
             }
-            HelpButton(onClick = onHelpTextChange)
+            val duplicateSwitchEnabled = remember(alchemistJinx, selectedMinion) {
+                when {
+                    // There is no jinx for this (yet), but Alchemist-Summoner surely must prevent
+                    // there from being a real Summoner, or else one would always effectively be
+                    // drunk because their ability is immediately overridden by the other's
+                    selectedMinion.id == "summoner" -> {
+                        viewModel.updateEnableDuplicateMinionModifiers(false)
+                        false
+                    }
+
+                    alchemistJinx == null -> true
+                    alchemistJinx.contains("not-in-play") -> {
+                        viewModel.updateEnableDuplicateMinionModifiers(false)
+                        false
+                    }
+                    alchemistJinx.contains("in play") -> {
+                        viewModel.updateEnableDuplicateMinionModifiers(true)
+                        false
+                    }
+                    else -> true
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(MaterialTheme.shapes.large)
+                        .clickable(enabled = duplicateSwitchEnabled)
+                        { viewModel.updateEnableDuplicateMinionModifiers(!viewModel.enableDuplicateMinionModifiers) }
+                        .padding(vertical = 12.dp)
+                ) {
+                    Switch(
+                        checked = viewModel.enableDuplicateMinionModifiers,
+                        enabled = duplicateSwitchEnabled,
+                        onCheckedChange = { viewModel.updateEnableDuplicateMinionModifiers(it) },
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(text = stringResource(R.string.alchemist_duplicate_switch), style = MaterialTheme.typography.bodyMedium)
+                }
+                HelpButton(onClick = { onHelpTextChange(alchemistDuplicateText) })
+            }
         }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+// TODO: Boffin-Balloonist switch

@@ -2,17 +2,18 @@ package clockplucker.data
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -34,18 +35,27 @@ import clockplucker.R
 
 data class Character(
     val id: String,
-    val name: TextValue,
-    val ability: TextValue,
-    val type: CharType,
-    val alignment: CharAlignment = if (type == CharType.TOWNSFOLK || type == CharType.OUTSIDER) CharAlignment.GOOD else CharAlignment.EVIL,
+    var name: TextValue,
+    var ability: TextValue,
+    var type: CharType,
+    var alignment: CharAlignment = if (type == CharType.TOWNSFOLK || type == CharType.OUTSIDER) CharAlignment.GOOD else CharAlignment.EVIL,
     @DrawableRes val icon: Int = R.drawable.icon_bootlegger,
-    val maxInstances: Int = 1, // for the Village Idiot
-    val dependsOn: String? = null, // for the Huntsman and Choirboy
-    val hardJinxedWith: List<String> = emptyList(), // for the Heretic
-    val additiveModifiers: List<Count> = listOf(Count()), // for the Balloonist, Baron, etc.
-    val overrideModifiers: List<CharType> = emptyList(), // for the Atheist, Legion, etc.
-    val thinksTheyAre: List<CharType> = emptyList() // for the Drunk, Lunatic, and Marionette
-)
+    var maxInstances: Int = 1, // for the Village Idiot
+    var dependsOn: String? = null, // for the Huntsman and Choirboy
+    var hardJinxedWith: List<String> = emptyList(), // for the Heretic
+    var additiveModifiers: List<Count> = listOf(Count()), // for the Balloonist, Baron, etc.
+    var overrideModifiers: List<CharType> = emptyList(), // for the Atheist, Legion, etc.
+    var thinksTheyAre: List<CharType> = emptyList() // for the Drunk, Lunatic, and Marionette
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Character) return false
+        return id == other.id
+    }
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+}
 
 enum class CharType {
     TOWNSFOLK, OUTSIDER, MINION, DEMON, FABLED, LORIC, TRAVELLER

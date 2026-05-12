@@ -2,17 +2,18 @@ package clockplucker
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import android.content.Context
 import androidx.compose.runtime.getValue
@@ -25,6 +26,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import clockplucker.data.CharType
 import clockplucker.data.Character
+import clockplucker.data.CharacterTransformer
+import clockplucker.data.Count
 import clockplucker.data.Player
 import clockplucker.data.Script
 import clockplucker.data.ScriptLoader
@@ -36,7 +39,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 enum class SelectedModes {
-    NO_RESTRICTIONS, ALIGNMENT, TYPE;
+    NO_RESTRICTIONS, ALIGNMENT, TYPE, SPECIFY, NONE;
 
     companion object {
         fun fromInt(i: Int): SelectedModes {
@@ -44,6 +47,8 @@ enum class SelectedModes {
                 1 -> NO_RESTRICTIONS
                 2 -> ALIGNMENT
                 3 -> TYPE
+                4 -> SPECIFY
+                5 -> NONE
                 else -> throw IllegalArgumentException("Invalid value for SelectedModes: $i")
             }
         }
@@ -52,6 +57,8 @@ enum class SelectedModes {
                 NO_RESTRICTIONS -> 1
                 ALIGNMENT -> 2
                 TYPE -> 3
+                SPECIFY -> 4
+                NONE -> 5
             }
         }
     }
@@ -69,11 +76,11 @@ enum class SelectedPriorities {
                 else -> throw IllegalArgumentException("Invalid value for SelectedPriorities: $i")
             }
         }
-        fun toInt(mode: SelectedModes): Int {
+        fun toInt(mode: SelectedPriorities): Int {
             return when (mode) {
-                SelectedModes.NO_RESTRICTIONS -> 1
-                SelectedModes.ALIGNMENT -> 2
-                SelectedModes.TYPE -> 3
+                NO_PRIORITIES -> 1
+                ALIGNMENT -> 2
+                TYPE -> 3
             }
         }
     }
@@ -84,24 +91,15 @@ class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
     var loadedScript: Script?
         get() = _loadedScript
         set(value) {
-            _loadedScript = value
             if (value != null) {
-                // If the Hermit is in the script, it may or may not think it is another character,
-                //      depending on what other outsiders are in the script
-                val updatedSelectableChars = value.selectableCharacters.map { character ->
-                    if (character.id == "hermit") {
-                        val drunk = value.selectableCharacters.any { it.id == "drunk" }
-                        val lunatic = value.selectableCharacters.any { it.id == "lunatic" }
-                        val hermitThinksTheyAre = when {
-                            drunk && lunatic -> listOf(CharType.DEMON)
-                            drunk -> listOf(CharType.TOWNSFOLK)
-                            lunatic -> listOf(CharType.DEMON)
-                            else -> character.thinksTheyAre
-                        }
-                        character.copy(thinksTheyAre = hermitThinksTheyAre)
-                    } else character
-                }
-                _loadedScript = value.copy(selectableCharacters = updatedSelectableChars)
+                val uniqueChars = value.selectableCharacters.map { it.copy() }
+                uniqueChars.forEach { CharacterTransformer.applyScriptwideRules(it, uniqueChars) }
+                _loadedScript = value.copy(selectableCharacters = uniqueChars)
+
+                // Reset alchemist settings
+                alchemistAbilityIndex = 0
+                enableDuplicateMinionModifiers = false
+                _alchemistJinx = null
 
                 // Default assignment chances for surprise characters to be 50%
                 value.selectableCharacters
@@ -112,6 +110,8 @@ class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
                 if (value.containsSentinel) {
                     autoSentinel = true
                 }
+            } else {
+                _loadedScript = null
             }
         }
 
@@ -130,10 +130,37 @@ class MainViewModel(private val repository: ScriptRepository) : ViewModel() {
     var alignmentN by mutableIntStateOf(1)
     var typeN by mutableIntStateOf(1)
 
+    var specifyN by mutableStateOf(Count(1,1,1,1))
+
     var autoSentinel by mutableStateOf(false)
     var manualSentinelModifier by mutableIntStateOf(0)
 
     var alchemistAbilityIndex by mutableIntStateOf(0)
+    fun updateAlchemistAbilityIndex(index: Int) {
+        alchemistAbilityIndex = index
+        updateTransformedAlchemist()
+    }
+
+    var enableDuplicateMinionModifiers by mutableStateOf(false)
+    fun updateEnableDuplicateMinionModifiers(enabled: Boolean) {
+        enableDuplicateMinionModifiers = enabled
+        updateTransformedAlchemist()
+    }
+
+    private fun updateTransformedAlchemist() {
+        val script = loadedScript ?: return
+        val alchemist = script.selectableCharacters.find { it.id == "alchemist" } ?: return
+        val minions = script.selectableCharacters.filter { it.type == CharType.MINION }
+        val minion = minions.getOrNull(alchemistAbilityIndex) ?: return
+
+        CharacterTransformer.transformAlchemist(alchemist, minion, enableDuplicateMinionModifiers, _alchemistJinx)
+    }
+
+    private var _alchemistJinx: String? = null
+    fun updateAlchemistJinx(jinx: String?) {
+        _alchemistJinx = jinx
+        updateTransformedAlchemist()
+    }
 
     val surpriseChance = mutableStateMapOf<Character, Float>()
 

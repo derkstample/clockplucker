@@ -2,17 +2,18 @@ package clockplucker.ui
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
@@ -181,7 +182,7 @@ fun CharacterConfirmationScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
-                        append(context.getString(R.string.townsfolk))
+                        append(context.getString(R.string.townsfolk).uppercase())
                     }
                     append(", ")
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
@@ -189,7 +190,7 @@ fun CharacterConfirmationScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
-                        append(context.getString(R.string.outsider_s, ""),
+                        append(context.getString(R.string.outsider_s, "").uppercase(),
                             if (oRemaining != 1) "S" else ""
                         )
                     }
@@ -199,7 +200,7 @@ fun CharacterConfirmationScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append(context.getString(R.string.minion_s, ""),
+                        append(context.getString(R.string.minion_s, "").uppercase(),
                             if (mRemaining != 1) "S" else ""
                         )
                     }
@@ -209,12 +210,74 @@ fun CharacterConfirmationScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append(context.getString(R.string.demon_s, ""),
+                        append(context.getString(R.string.demon_s, "").uppercase(),
                             if (dRemaining != 1) "S" else ""
                         )
                     }
                     append(".")
                 }
+                SelectedModes.SPECIFY -> {
+                    val tInScript = selectableCharacters.count { it.type == CharType.TOWNSFOLK }
+                    val oInScript = selectableCharacters.count { it.type == CharType.OUTSIDER }
+                    val mInScript = selectableCharacters.count { it.type == CharType.MINION }
+                    val dInScript = selectableCharacters.count { it.type == CharType.DEMON }
+
+                    val tLimit = minOf(viewModel.specifyN.townsfolk, tInScript)
+                    val oLimit = minOf(viewModel.specifyN.outsider, oInScript)
+                    val mLimit = minOf(viewModel.specifyN.minion, mInScript)
+                    val dLimit = minOf(viewModel.specifyN.demon, dInScript)
+
+                    val tCount = selectedCharacters.count { it.type == CharType.TOWNSFOLK }
+                    val oCount = selectedCharacters.count { it.type == CharType.OUTSIDER }
+                    val mCount = selectedCharacters.count { it.type == CharType.MINION }
+                    val dCount = selectedCharacters.count { it.type == CharType.DEMON }
+
+                    val tRemaining = maxOf(0, tLimit - tCount)
+                    val oRemaining = maxOf(0, oLimit - oCount)
+                    val mRemaining = maxOf(0, mLimit - mCount)
+                    val dRemaining = maxOf(0, dLimit - dCount)
+
+                    append(context.getString(R.string.you_may_select))
+                    withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
+                        append("$tRemaining")
+                    }
+                    append(context.getString(R.string.more))
+                    withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
+                        append(context.getString(R.string.townsfolk).uppercase())
+                    }
+                    append(", ")
+                    withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
+                        append("$oRemaining")
+                    }
+                    append(context.getString(R.string.more))
+                    withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
+                        append(context.getString(R.string.outsider_s, "").uppercase(),
+                            if (oRemaining != 1) "S" else ""
+                        )
+                    }
+                    append(", ")
+                    withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
+                        append("$mRemaining")
+                    }
+                    append(context.getString(R.string.more))
+                    withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
+                        append(context.getString(R.string.minion_s, "").uppercase(),
+                            if (mRemaining != 1) "S" else ""
+                        )
+                    }
+                    append("," + context.getString(R.string.and))
+                    withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
+                        append("$dRemaining")
+                    }
+                    append(context.getString(R.string.more))
+                    withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
+                        append(context.getString(R.string.demon_s, "").uppercase(),
+                            if (dRemaining != 1) "S" else ""
+                        )
+                    }
+                    append(".")
+                }
+                else -> {}
             }
         }
     }
@@ -243,6 +306,7 @@ fun CharacterConfirmationScreen(
     }
 
     val reorderEnabled = remember { viewModel.playerPriorityToggle }
+    val noneSelected = remember(selectedCharacters) { selectedCharacters.isEmpty() }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -282,7 +346,7 @@ fun CharacterConfirmationScreen(
                 color = MaterialTheme.colorScheme.outlineVariant
             )
 
-            if (reorderEnabled) {
+            if (reorderEnabled && !noneSelected) {
                 Column(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -353,7 +417,7 @@ fun CharacterConfirmationScreen(
                         )
                     }
                 }
-                if (reorderEnabled) {
+                if (reorderEnabled && !noneSelected) {
                     item(key = "footer_preferred") {
                         Column(
                             modifier = Modifier
@@ -386,6 +450,15 @@ fun CharacterConfirmationScreen(
                                 )
                             }
                         }
+                    }
+                } else if (noneSelected) {
+                    item(key = "none_selected") {
+                        Text(
+                            text = stringResource(R.string.none_selected),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(vertical = 24.dp, horizontal = 32.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }

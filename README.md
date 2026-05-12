@@ -1,7 +1,8 @@
 <img alt="" height="614" src="assets/clockpluckertoken.png" width="614"/>
+
 # Clock Plucker
 
-Clock Plucker is a utility app for Storytellers of the social deduction game **Blood on the Clocktower**. It streamlines the process of bagging a script and enables the Gardener Loric to be player-driven (that is, enables players to request specific characters) by intelligently assigning characters based on player preferences while strictly adhering to all setup rules and character interactions.
+Clock Plucker is an unofficial utility app for Storytellers of the social deduction game **Blood on the Clocktower**. It streamlines the process of bagging a script and enables the Gardener Loric to be player-driven (that is, enables players to request specific characters) by intelligently assigning characters based on player preferences while strictly adhering to all setup rules and character interactions.
 
 ## <img alt="" height="24" src="assets/icon_amnesiac.png" width="24"/> Features 
 
@@ -45,7 +46,7 @@ Clock Plucker utilizes the **Choco Solver** library to assign characters to play
 
 2. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/ClockPlucker.git
+   git clone https://github.com/derkstample/clockplucker.git
    ```
 
 3. **Open in Android Studio**:
@@ -54,6 +55,13 @@ Clock Plucker utilizes the **Choco Solver** library to assign characters to play
 4. **Build**:
    Run `./gradlew assembleDebug` or use the "Run" button in Android Studio to deploy to a device/emulator.
 
-## <img alt="" height="24" src="assets/icon_mayor.png" width="24"/> License
+## <img alt="" height="24" src="assets/icon_mayor.png" width="24"/> License & Disclaimer
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+<img alt="" src="assets/ccc-sleeve.png"/>
+
+* [Blood on the Clocktower](https://bloodontheclocktower.com/) is a trademark of Steven Medway and [The Pandemonium Institute](https://www.thepandemoniuminstitute.com/)
+* Iconography by [Font Awesome](https://fontawesome.com/)
+* Fonts by [Google Fonts](https://fonts.google.com/) and [Online Web Fonts](https://www.onlinewebfonts.com/)
+* All other images and icons are copyright to their respective owners
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.

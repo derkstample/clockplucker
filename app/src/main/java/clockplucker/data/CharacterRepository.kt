@@ -2,17 +2,18 @@ package clockplucker.data
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import clockplucker.R
 
@@ -827,7 +828,7 @@ object CharacterRepository {
             type = CharType.MINION,
             icon = R.drawable.icon_summoner,
             ability = TextValue.Resource(R.string.ability_summoner),
-            additiveModifiers = listOf(Count(townsfolk = 1, demon = -1))
+            overrideModifiers = listOf(CharType.DEMON)
         ),
         "vizier" to Character(
             id = "vizier",
@@ -935,8 +936,7 @@ object CharacterRepository {
             name = TextValue.Resource(R.string.name_lilmonsta),
             type = CharType.DEMON,
             icon = R.drawable.icon_lilmonsta,
-            ability = TextValue.Resource(R.string.ability_lilmonsta),
-            additiveModifiers = listOf(Count(minion = 1, demon = -1))
+            ability = TextValue.Resource(R.string.ability_lilmonsta)
         ),
         "lleech" to Character(
             id = "lleech",
@@ -1129,7 +1129,7 @@ object CharacterRepository {
             id = "bigwig",
             name = TextValue.Resource(R.string.name_bigwig),
             type = CharType.LORIC,
-            icon = R.drawable.icon_big_wig,
+            icon = R.drawable.icon_bigwig,
             ability = TextValue.Resource(R.string.ability_bigwig)
         ),
         "bootlegger" to Character(
@@ -1330,6 +1330,8 @@ object CharacterRepository {
             ability = TextValue.Resource(R.string.ability_voudon)
         )
     )
+
+    val allCharacters: List<Character> get() = characterData.values.toList()
 
     fun getCharacterInfo(id: String): Character? {
         val normalizedId = id.lowercase().replace(" ","").replace("-","").replace("_","")

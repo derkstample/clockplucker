@@ -2,17 +2,18 @@ package clockplucker.ui
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
@@ -27,6 +28,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -110,7 +112,7 @@ fun CharacterSelectScreen(
     val djinnJinxes = remember(selectableCharacters) {
         val jinxes = mutableListOf<Pair<Character,Character>>()
         for (i in selectableCharacters.indices) {
-            for (j in selectableCharacters.indices) { // kind of horribly inefficient, but we only need to run it once per composition
+            for (j in selectableCharacters.indices) { // kind of horribly inefficient, but we only need to run it once upon initial composition
                 val char1 = selectableCharacters[i]
                 val char2 = selectableCharacters[j]
                 if (DjinnRepository.getJinxAbility(char1.id, char2.id) != null) {
@@ -235,7 +237,7 @@ fun CharacterSelectScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
-                        append(context.getString(R.string.townsfolk))
+                        append(context.getString(R.string.townsfolk).uppercase())
                     }
                     append(", ")
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
@@ -243,7 +245,7 @@ fun CharacterSelectScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
-                        append(context.getString(R.string.outsider_s, ""),
+                        append(context.getString(R.string.outsider_s, "").uppercase(),
                         if (oRemaining != 1) "S" else ""
                         )
                     }
@@ -253,7 +255,7 @@ fun CharacterSelectScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append(context.getString(R.string.minion_s, ""),
+                        append(context.getString(R.string.minion_s, "").uppercase(),
                         if (mRemaining != 1) "S" else ""
                         )
                     }
@@ -263,12 +265,74 @@ fun CharacterSelectScreen(
                     }
                     append(context.getString(R.string.more))
                     withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
-                        append(context.getString(R.string.demon_s, ""),
-                        if (dRemaining != 1) "S" else ""
+                        append(context.getString(R.string.demon_s, "").uppercase(),
+                            if (dRemaining != 1) "S" else ""
                         )
                     }
                     append(".")
                 }
+                SelectedModes.SPECIFY -> {
+                    val tInScript = selectableCharacters.count { it.type == CharType.TOWNSFOLK }
+                    val oInScript = selectableCharacters.count { it.type == CharType.OUTSIDER }
+                    val mInScript = selectableCharacters.count { it.type == CharType.MINION }
+                    val dInScript = selectableCharacters.count { it.type == CharType.DEMON }
+
+                    val tLimit = minOf(viewModel.specifyN.townsfolk, tInScript)
+                    val oLimit = minOf(viewModel.specifyN.outsider, oInScript)
+                    val mLimit = minOf(viewModel.specifyN.minion, mInScript)
+                    val dLimit = minOf(viewModel.specifyN.demon, dInScript)
+
+                    val tCount = selectedCharacters.count { it.type == CharType.TOWNSFOLK }
+                    val oCount = selectedCharacters.count { it.type == CharType.OUTSIDER }
+                    val mCount = selectedCharacters.count { it.type == CharType.MINION }
+                    val dCount = selectedCharacters.count { it.type == CharType.DEMON }
+
+                    val tRemaining = maxOf(0, tLimit - tCount)
+                    val oRemaining = maxOf(0, oLimit - oCount)
+                    val mRemaining = maxOf(0, mLimit - mCount)
+                    val dRemaining = maxOf(0, dLimit - dCount)
+
+                    append(context.getString(R.string.you_may_select))
+                    withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
+                        append("$tRemaining")
+                    }
+                    append(context.getString(R.string.more))
+                    withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
+                        append(context.getString(R.string.townsfolk).uppercase())
+                    }
+                    append(", ")
+                    withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
+                        append("$oRemaining")
+                    }
+                    append(context.getString(R.string.more))
+                    withStyle(style = labelSmallStyle.copy(color = GoodPrimary)) {
+                        append(context.getString(R.string.outsider_s, "").uppercase(),
+                            if (oRemaining != 1) "S" else ""
+                        )
+                    }
+                    append(", ")
+                    withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
+                        append("$mRemaining")
+                    }
+                    append(context.getString(R.string.more))
+                    withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
+                        append(context.getString(R.string.minion_s, "").uppercase(),
+                            if (mRemaining != 1) "S" else ""
+                        )
+                    }
+                    append("," + context.getString(R.string.and))
+                    withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
+                        append("$dRemaining")
+                    }
+                    append(context.getString(R.string.more))
+                    withStyle(style = labelSmallStyle.copy(color = EvilPrimary)) {
+                        append(context.getString(R.string.demon_s, "").uppercase(),
+                            if (dRemaining != 1) "S" else ""
+                        )
+                    }
+                    append(".")
+                }
+                else -> {}
             }
             append(context.getString(R.string.you_will_be_able_to_review_your_selection))
         }
@@ -340,10 +404,10 @@ fun CharacterSelectScreen(
                         ) {
                             SectionHeader(
                                 text = when (type) {
-                                    CharType.OUTSIDER -> stringResource(R.string.outsider_s, "S")
-                                    CharType.MINION -> stringResource(R.string.minion_s, "S")
-                                    CharType.DEMON -> stringResource(R.string.demon_s, "S")
-                                    else -> stringResource(R.string.townsfolk)
+                                    CharType.OUTSIDER -> stringResource(R.string.outsider_s, "S").uppercase()
+                                    CharType.MINION -> stringResource(R.string.minion_s, "S").uppercase()
+                                    CharType.DEMON -> stringResource(R.string.demon_s, "S").uppercase()
+                                    else -> stringResource(R.string.townsfolk).uppercase()
                                 }
                             )
                         }
@@ -382,6 +446,24 @@ fun CharacterSelectScreen(
                                                 selectedCharacters.count { it.type == character.type }
                                             count < limit
                                         }
+
+                                        SelectedModes.SPECIFY -> {
+                                            val limit = minOf(
+                                                when (character.type) {
+                                                    CharType.TOWNSFOLK -> viewModel.specifyN.townsfolk
+                                                    CharType.OUTSIDER -> viewModel.specifyN.outsider
+                                                    CharType.MINION -> viewModel.specifyN.minion
+                                                    CharType.DEMON -> viewModel.specifyN.demon
+                                                    else -> 0
+                                                },
+                                                selectableCharacters.count { it.type == character.type }
+                                            )
+                                            val count =
+                                                selectedCharacters.count { it.type == character.type }
+                                            count < limit
+                                        }
+
+                                        else -> false
                                     }
                                 }
                             }
@@ -549,11 +631,14 @@ fun CharacterRow(
                 .padding(end = 8.dp)
         )
         Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            FlowRow(verticalArrangement = Arrangement.Center) {
                 Text(
                     text = name,
                     style = MaterialTheme.typography.bodySmall,
-                    color = colorScheme.primary
+                    color = colorScheme.primary,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(end = 8.dp)
                 )
                 jinxIcons.forEach { icon ->
                     Image(
@@ -563,9 +648,11 @@ fun CharacterRow(
                         modifier = Modifier
                             .size(36.dp)
                             .aspectRatio(1f)
+                            .align(Alignment.CenterVertically)
                     )
                 }
             }
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = ability,
@@ -594,9 +681,6 @@ fun ExcludedCharacterRow(
     val name1 = character1.name.asAnnotatedString()
     val ability1 = character1.ability.asAnnotatedString()
 
-    val name2 = character2?.name?.asAnnotatedString()
-    val ability2 = character2?.ability?.asAnnotatedString()
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -605,7 +689,7 @@ fun ExcludedCharacterRow(
                 expanded = !expanded
                 onClick()
             }
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -628,13 +712,14 @@ fun ExcludedCharacterRow(
                     color = if (character1.type == CharType.FABLED) FabledPrimary else LoricPrimary
                 )
             }
-            character2?.let {
+            character2?.let { char2 ->
+                val name2 = character2.name.asAnnotatedString()
                 Row(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = it.icon),
+                        painter = painterResource(id = char2.icon),
                         contentDescription = name2.toString(),
                         modifier = Modifier
                             .size(72.dp)
@@ -642,9 +727,9 @@ fun ExcludedCharacterRow(
                             .padding(end = 8.dp)
                     )
                     Text(
-                        text = name2!!,
+                        text = name2,
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (it.type == CharType.FABLED) FabledPrimary else LoricPrimary
+                        color = if (char2.type == CharType.FABLED) FabledPrimary else LoricPrimary
                     )
                 }
             } ?: Spacer(modifier = Modifier.weight(1f))
@@ -663,7 +748,7 @@ fun ExcludedCharacterRow(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
@@ -671,9 +756,9 @@ fun ExcludedCharacterRow(
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.weight(1f)
                     )
-                    if (character2 != null && ability2 != null) {
+                    character2?.let {
                         Text(
-                            text = ability2,
+                            text = character2.ability.asAnnotatedString(),
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.weight(1f)
                         )
@@ -689,6 +774,7 @@ fun ExcludedCharacterRow(
                         DjinnRow(jinx = jinx)
                     }
                 }
+                Spacer(modifier = Modifier.padding(vertical = 8.dp))
             }
         }
     }
@@ -707,7 +793,7 @@ fun DjinnRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(

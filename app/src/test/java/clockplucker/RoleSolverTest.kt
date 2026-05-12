@@ -2,17 +2,18 @@ package clockplucker
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import clockplucker.data.CharAlignment
 import clockplucker.data.CharType
@@ -523,14 +524,14 @@ class RoleSolverTest {
             )
         )
 
-        // 2. Setup 6 Players, each with 2 preferred characters
+        // 2. Setup 6 Players, each with 3 preferred characters
         val players = listOf(
-            Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0], characters[8])), // wants t1 or m1
-            Player(id = UUID.randomUUID(), name = "Player 2", selectedChars = listOf(characters[1], characters[8])), // wants t2 or m1
-            Player(id = UUID.randomUUID(), name = "Player 3", selectedChars = listOf(characters[2], characters[10])), // wants t3 or d1
-            Player(id = UUID.randomUUID(), name = "Player 4", selectedChars = listOf(characters[9], characters[0])), // wants m2 or t1
-            Player(id = UUID.randomUUID(), name = "Player 5", selectedChars = listOf(characters[10], characters[1])),  // wants d1 or t2
-            Player(id = UUID.randomUUID(), name = "Player 6", selectedChars = listOf(characters[2], characters[3])) // wants t3 or t4
+            Player(id = UUID.randomUUID(), name = "Player 1", selectedChars = listOf(characters[0], characters[8], characters[1])), // wants t1 or m1 or t2
+            Player(id = UUID.randomUUID(), name = "Player 2", selectedChars = listOf(characters[1], characters[8], characters[2])), // wants t2 or m1 or t3
+            Player(id = UUID.randomUUID(), name = "Player 3", selectedChars = listOf(characters[2], characters[10], characters[3])), // wants t3 or d1 or t4
+            Player(id = UUID.randomUUID(), name = "Player 4", selectedChars = listOf(characters[9], characters[0], characters[4])), // wants m2 or t1 or t5
+            Player(id = UUID.randomUUID(), name = "Player 5", selectedChars = listOf(characters[10], characters[1], characters[5])),  // wants d1 or t2 or t6
+            Player(id = UUID.randomUUID(), name = "Player 6", selectedChars = listOf(characters[2], characters[3], characters[0])) // wants t3 or t4 or t1
         )
 
         // 3. Define starting count for 6 players
@@ -997,7 +998,7 @@ class RoleSolverTest {
                 drunkCount++
             }
         }
-        assert(drunkCount in 4000..6000) { "Drunk count was $drunkCount, expected 4000..6000" }
+        assert(drunkCount in 4500..5500) { "Drunk count was $drunkCount, expected 4500..5500" }
     }
 
     @Test
@@ -1205,7 +1206,7 @@ class RoleSolverTest {
                 )
 
         val basePlayers = (1..6).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
-        val startingCount = TypeCountLookup().getBaseCounts(6)
+        val startingCount = TypeCountLookup().getBaseCounts(basePlayers.size)
 
         // 1. No players prefer an outsider -> assert 0 outsiders
         val players0 = basePlayers.map { p -> p.copy(selectedChars = listOf(characters[0], characters[1], characters[2], characters[3])) } // Everyone wants Townsfolk
@@ -1295,7 +1296,7 @@ class RoleSolverTest {
 
         val basePlayers = (1..7).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
         // 7 players: 5 Townsfolk, 0 Outsiders, 1 Minion, 1 Demon.
-        val baseCount7 = Count(townsfolk = 5, outsider = 0, minion = 1, demon = 1)
+        val baseCount7 = TypeCountLookup().getBaseCounts(basePlayers.size)
 
         for (numPreferredOutsiders in 0..4) {
             val players = basePlayers.toMutableList()
@@ -1368,12 +1369,12 @@ class RoleSolverTest {
                 )
 
         val basePlayers = (1..7).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
-        val baseCount7 = Count(townsfolk = 5, outsider = 0, minion = 1, demon = 1)
+        val baseCount7 = TypeCountLookup().getBaseCounts(basePlayers.size)
 
         // Case 1: Players prefer Townsfolk -> should pick +0 Outsider mod
         val players0 = basePlayers.toMutableList()
         players0[0] = players0[0].copy(selectedChars = listOf(balloonist))
-        (1..6).forEach { i -> players0[i] = players0[i].copy(selectedChars = listOf(characters[i])) } // t1..t6
+        (1..4).forEach { i -> players0[i] = players0[i].copy(selectedChars = listOf(characters[i])) } // t1..t4
         val assignments0 = RoleSolver(players0, characters, baseCount7).optimizeAssignments()
         assert(assignments0.isNotEmpty())
         assertEquals(0, assignments0.values.count { it.first.type == CharType.OUTSIDER })
@@ -1381,7 +1382,7 @@ class RoleSolverTest {
         // Case 2: One player prefers an Outsider -> should pick +1 Outsider mod
         val players1 = basePlayers.toMutableList()
         players1[0] = players1[0].copy(selectedChars = listOf(balloonist))
-        (1..6).forEach { i -> players1[i] = players1[i].copy(selectedChars = listOf(characters[i])) } // t1..t6
+        (1..4).forEach { i -> players1[i] = players1[i].copy(selectedChars = listOf(characters[i])) } // t1..t4
         players1[1] = players1[1].copy(selectedChars = listOf(characters[11])) // wants o1
         val assignments1 = RoleSolver(players1, characters, baseCount7).optimizeAssignments()
         assert(assignments1.isNotEmpty())
@@ -1433,7 +1434,7 @@ class RoleSolverTest {
                 )
 
         val basePlayers = (1..6).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
-        val baseCount6 = Count(townsfolk = 3, outsider = 1, minion = 1, demon = 1)
+        val baseCount6 = TypeCountLookup().getBaseCounts(basePlayers.size)
 
         // Try to force both Heretic and Lleech
         val players = basePlayers.toMutableList()
@@ -1702,18 +1703,18 @@ class RoleSolverTest {
 
         assert(assignments1.isNotEmpty())
         val legionCount1 = assignments1.values.count { it.first.id == "legion" }
-        assert(legionCount1 >= 5)
+        assert(legionCount1 >= 6)
         assertEquals(0, assignments1.values.count { it.first.type == CharType.MINION })
         assertEquals(0, assignments1.values.count { it.first.type == CharType.DEMON && it.first.id != "legion" })
 
-        // Case 2: 6 players select Legion, remainder selects townsfolk
+        // Case 2: 7 players select Legion, remainder selects townsfolk
         val players2 = players.mapIndexed { index, player ->
-            if (index < 6) player.copy(selectedChars = listOf(legion)) else player.copy(selectedChars = listOf(characters[index]))
+            if (index < 7) player.copy(selectedChars = listOf(legion)) else player.copy(selectedChars = listOf(characters[index]))
         }
         val assignments2 = RoleSolver(players2, characters, baseCount10).optimizeAssignments()
         assert(assignments2.isNotEmpty())
         val legionCount2 = assignments2.values.count { it.first.id == "legion" }
-        assertEquals(6, legionCount2)
+        assertEquals(7, legionCount2)
         assertEquals(0, assignments2.values.count { it.first.type == CharType.MINION })
         assertEquals(0, assignments1.values.count { it.first.type == CharType.DEMON && it.first.id != "legion" })
 
@@ -1724,7 +1725,7 @@ class RoleSolverTest {
         val assignments3 = RoleSolver(players3, characters, baseCount10).optimizeAssignments()
         assert(assignments3.isNotEmpty())
         val legionCount3 = assignments3.values.count { it.first.id == "legion" }
-        assertEquals(7, legionCount3) // Max is (10 * 0.75) = 7
+        assertEquals(8, legionCount3) // Max is 8, 7 base good + 1
         assertEquals(0, assignments3.values.count { it.first.type == CharType.MINION })
         assertEquals(0, assignments1.values.count { it.first.type == CharType.DEMON && it.first.id != "legion" })
     }
@@ -1893,6 +1894,8 @@ class RoleSolverTest {
         assert(assignments[players[7]]?.first?.id == "d1")
     }
 
+    //TODO: either fix or delete test. with the change to surprise characters we can no longer
+    //      guarantee they are assigned specific roles
     @Test
     fun testRoleSolverMarionetteHuntsman() = runBlocking {
         // 1. Create a list of 6 townsfolk, 2 outsiders, 2 minions, and 1 demon.
@@ -1954,15 +1957,8 @@ class RoleSolverTest {
                     )
                 )
 
-        // 2. Create a list of 6 players. Player 4 has the huntsman in their selectedChars. Other players have no preferences.
-        val players = (1..6).map { i ->
-            when (i) {
-                1 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(huntsman))
-                2 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(demon))
-                3 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(huntsman))
-                else -> Player(id = UUID.randomUUID(), name = "Player $i")
-            }
-        }
+        // 2. Create a list of 6 players. All players want to be the Huntsman
+        val players = (1..6).map { Player(id = UUID.randomUUID(), name = "Player $it", selectedChars = listOf(huntsman)) }
 
         val baseCount6 = TypeCountLookup().getBaseCounts(players.size)
 
@@ -1979,8 +1975,6 @@ class RoleSolverTest {
         // 4. Verify results
         assert(assignments.isNotEmpty())
 
-        printAssignments(assignments)
-
         val marionetteEntry = assignments.entries.find { it.value.first.id == "marionette" }
         assertNotNull("Marionette should be assigned", marionetteEntry)
         assertEquals("Marionette should think they are the huntsman", "huntsman", marionetteEntry?.value?.second?.id)
@@ -1991,6 +1985,7 @@ class RoleSolverTest {
         assert(marionetteEntry?.key != damselEntry?.key) { "Marionette and Damsel should be assigned to different players" }
     }
 
+    //TODO: same here
     @Test
     fun testRoleSolverMarionetteBalloonist() = runBlocking {
         // 1. Create a list of 6 townsfolk, 2 outsiders, 2 minions, and 1 demon.
@@ -2320,6 +2315,106 @@ class RoleSolverTest {
 
         // the assigned hermit should think they are a demon
         assert(assignments.filter { it.value.first.id == "hermit" && it.value.second?.type == CharType.DEMON }.size == 1)
+    }
+
+    @Test
+    fun testRoleSolverAllSurprises() = runBlocking {
+        // 1. Create a script with:
+        // 6 Townsfolk (including Balloonist)
+        val balloonist = Character(
+            id = "balloonist",
+            name = TextValue.Raw("Balloonist"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("[+0 or +1 Outsider]"),
+            additiveModifiers = listOf(Count(), Count(townsfolk = -1, outsider = 1))
+        )
+        val townsfolk = (1..5).map { i ->
+            Character("t$i", TextValue.Raw("Townsfolk $i"), type = CharType.TOWNSFOLK, icon = 0, ability = TextValue.Raw(""))
+        }
+
+        // 4 Outsiders (including Drunk, Hermit, Lunatic)
+        val drunk = Character(
+            id = "drunk",
+            name = TextValue.Raw("Drunk"),
+            type = CharType.OUTSIDER,
+            icon = 0,
+            ability = TextValue.Raw(""),
+            thinksTheyAre = listOf(CharType.TOWNSFOLK)
+        )
+        val hermit = Character(
+            id = "hermit",
+            name = TextValue.Raw("Hermit"),
+            type = CharType.OUTSIDER,
+            icon = 0,
+            ability = TextValue.Raw(""),
+            thinksTheyAre = listOf(CharType.TOWNSFOLK)
+        )
+        val lunatic = Character(
+            id = "lunatic",
+            name = TextValue.Raw("Lunatic"),
+            type = CharType.OUTSIDER,
+            icon = 0,
+            ability = TextValue.Raw(""),
+            thinksTheyAre = listOf(CharType.DEMON)
+        )
+        val otherOutsider = Character("o4", TextValue.Raw("Outsider 4"), type = CharType.OUTSIDER, icon = 0, ability = TextValue.Raw(""))
+
+        // 2 Minions (including Marionette)
+        val marionette = Character(
+            id = "marionette",
+            name = TextValue.Raw("Marionette"),
+            type = CharType.MINION,
+            icon = 0,
+            ability = TextValue.Raw(""),
+            thinksTheyAre = listOf(CharType.TOWNSFOLK)
+        )
+        val otherMinion = Character("m2", TextValue.Raw("Minion 2"), type = CharType.MINION, icon = 0, ability = TextValue.Raw(""))
+
+        // 2 Demons (including Fang Gu)
+        val fangGu = Character(
+            id = "fanggu",
+            name = TextValue.Raw("Fang Gu"),
+            type = CharType.DEMON,
+            icon = 0,
+            ability = TextValue.Raw("[+1 Outsider]"),
+            additiveModifiers = listOf(Count(townsfolk = -1, outsider = 1))
+        )
+        val otherDemon = Character("d2", TextValue.Raw("Demon 2"), type = CharType.DEMON, icon = 0, ability = TextValue.Raw(""))
+
+        val characters = listOf(balloonist) + townsfolk + listOf(drunk, hermit, lunatic, otherOutsider, marionette, otherMinion, fangGu, otherDemon)
+
+        // 2. Setup 8 Players with no preferences
+        val players = (1..8).map { i -> Player(id = UUID.randomUUID(), name = "Player $i") }
+
+        // 3. Define starting count for 8 players: 5 Townsfolk, 1 Outsider, 1 Minion, 1 Demon
+        val startingCount = TypeCountLookup().getBaseCounts(players.size)
+
+        // 4. Initialize RoleSolver with surprise chances
+        val solver = RoleSolver(
+            players = players,
+            availableChars = characters,
+            baseCount = startingCount,
+            surpriseChances = mapOf(
+                drunk to 1f,
+                hermit to 1f,
+                lunatic to 1f,
+                marionette to 1f
+            )
+        )
+
+        // 5. Solve
+        val assignments = solver.optimizeAssignments()
+        val assignedRoles = assignments.values.map { it.first }
+        val reservedRoles = assignments.values.map { it.second }
+
+        // 6. Verify results
+        assert(assignments.isNotEmpty())
+        printAssignments(assignments)
+        assertEquals("Exactly 3 outsiders should be assigned", 3, assignedRoles.count { it.type == CharType.OUTSIDER })
+        assert(assignedRoles.any { it.id == "balloonist" } || reservedRoles.any { it?.id == "balloonist" }) { "Balloonist should be assigned" }
+        assert(assignedRoles.any { it.id == "marionette" }) { "Marionette should be assigned" }
+        assert(assignedRoles.any { it.id == "fanggu" }) { "Fang Gu should be assigned" }
     }
 
     fun printAssignments(assignments: Map<Player, Pair<Character, Character?>>) {

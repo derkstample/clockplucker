@@ -1,1 +1,4 @@
 /build
+/src/main/res/values/charater_strings.xml
+/src/main/res/values/jinx_strings.xml
+/src/main/res/drawable/icon_*

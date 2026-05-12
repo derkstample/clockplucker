@@ -2,17 +2,18 @@ package clockplucker.ui
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -64,7 +65,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -102,6 +106,11 @@ fun PlayerListScreen(
     viewModel: MainViewModel
 ) {
     val listState = rememberLazyListState()
+    val showTopFade by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0
+        }
+    }
     val haptic = LocalHapticFeedback.current
     var activeMenuIndex by remember { mutableStateOf<Int?>(null) }
 
@@ -177,6 +186,30 @@ fun PlayerListScreen(
                     .fillMaxWidth()
                     .weight(1f)
                     .drawStableVerticalScrollbar(state = listState)
+                    .graphicsLayer {
+                        compositingStrategy = if (showTopFade) CompositingStrategy.Offscreen else CompositingStrategy.Auto
+                    }
+                    .drawWithContent {
+                        drawContent() // Draw the actual list items first
+
+                        if (showTopFade) {
+                            // Define the fading area
+                            val fadeHeight = 40.dp.toPx()
+
+                            // Draw a gradient that masks the content
+                            drawRect(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.Black
+                                    ),
+                                    startY = 0f,
+                                    endY = fadeHeight
+                                ),
+                                blendMode = BlendMode.DstIn
+                            )
+                        }
+                    }
             ) {
                 itemsIndexed(
                     items = viewModel.players,

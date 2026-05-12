@@ -2,33 +2,41 @@ package clockplucker.data
 
 //    Copyright 2026 Derek Rodriguez
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import clockplucker.SelectedPriorities
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.chocosolver.solver.Model
+import org.chocosolver.solver.Solver
 import org.chocosolver.solver.constraints.extension.Tuples
 import org.chocosolver.solver.variables.BoolVar
 import org.chocosolver.solver.variables.IntVar
-import kotlin.math.ceil
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.random.Random
 
-
-// todo: alchemist gains a minions ability. The storyteller should be able to force a specific minion's ability to gain
-//      if they gain a minion who has a setup modifier as part of their ability, it should apply.
-//      this should stack with any actual assignments of that minion (so an alchemist-baron and baron results in +4 outsiders)
-//      alternatively, an alchemist with some minion abilities can force or prevent a minion from being assigned.
+// todo: an assigned Summoner will never allow a Marionette to generate,
+//      since they prevent a demon from generating. Technically, this is
+//      wrong; the jinx specifies that a Marionette can be in a Summoner
+//      game, as a good player neighboring the summoned demon is made
+//      the Marionette upon the demon's summoning. Not sure the best way
+//      to make this exception without it being horribly hacky.
+//      idea: in the viewmodel, upon loading the script, if it contains
+//      both a Marionette and Summoner, edit the Marionette's id to
+//      something like marionette-summoner to break the RoleSolver
+//      neighboring constraint without affecting any other logic.
+//      Handle the reassignment in GrimRevealScreen like lilmonsta.
+//      Make id "marionette-late_entry" because the lilmonsta affects
+//      it the same way.
 
 class RoleSolver (
     private val players: List<Player>,
@@ -38,24 +46,99 @@ class RoleSolver (
     private val selectedPriority: SelectedPriorities = SelectedPriorities.NO_PRIORITIES,
     private val playerPriorityToggle: Boolean = false,
     private val containsPope: Boolean = false,
-    private val autoSentinel: Boolean = false,
-    private val alchemistAbilityIndex: Int = 0
+    private val autoSentinel: Boolean = false
 ){
-    suspend fun optimizeAssignments(): Map<Player, Pair<Character, Character?>> = withContext(Dispatchers.Default){
+    data class SolverProgress(
+        val solutionsFound: Int,
+        val bestScore: Int,
+        val nodesExplored: Long,
+        val timeElapsed: Float
+    )
+
+    private var internalSolver: Solver? = null
+    private val stopRequested = AtomicBoolean(false)
+
+    /**
+     * Polling method to get the current state of the solver.
+     */
+    fun getProgress(): SolverProgress? {
+        val s = internalSolver ?: return null
+        return SolverProgress(
+            solutionsFound = s.measures.solutionCount.toInt(),
+            bestScore = if (s.measures.solutionCount > 0)
+                s.getObjectiveManager<IntVar>().bestSolutionValue.toInt() else 0,
+            nodesExplored = s.measures.nodeCount,
+            timeElapsed = s.measures.timeCount
+        )
+    }
+
+    fun stop() {
+        stopRequested.set(true)
+    }
+
+    fun optimizeAssignments(
+        onProgress: (SolverProgress) -> Unit = {}
+    ): Map<Player, Pair<Character, Character?>> {
         val model = Model("Ultra Gardener 9000")
+        val solver = model.solver
+        internalSolver = solver
+        solver.limitSearch { stopRequested.get() }
+
         val numPlayers = players.size
         val numChars = availableChars.size
         val none = numChars // Dummy index representing no reservation
 
-        if (numPlayers == 0 || numChars == 0) return@withContext emptyMap()
+        if (numPlayers == 0 || numChars == 0) return emptyMap()
 
-        // 1. Build the Objective/Profit Matrix
-        // Rows = Players, Cols = Characters
+        // 1. Define Variables
+        // assignments[i] represents the index of the character assigned to player i
+        val assignments = model.intVarArray("assignments", numPlayers, 0, numChars - 1)
+        // reservations[i] represents the index of the character reserved by player i
+        val reservations = model.intVarArray("reservations", numPlayers, 0, none)
+
+        // realOccurrences[j] represents how many times character j is assigned overall
+        val realOccurrences = model.intVarArray("realOccurrences", numChars, 0, numPlayers)
+        val reservedOccurrences = model.intVarArray("reservedOccurrences", numChars + 1, 0, numPlayers)
+
+
+        // 2. Build the Objective/Profit Matrix & Surprise Logic
+        val surpriseWeighting = Array(numPlayers) { IntArray(numChars) }
+        val inPlayVars = mutableListOf<BoolVar>()
+        val surpriseBonusWeights = mutableListOf<Int>()
+        val pickedPlayers = mutableSetOf<Int>()
+
+        availableChars.forEachIndexed { cIdx, char ->
+            if (char.thinksTheyAre.isNotEmpty()) {
+                val chance = surpriseChances[char] ?: 0f
+                // Every deceiver gets a variable to track if they are in play
+                val inPlay = model.arithm(realOccurrences[cIdx], ">", 0).reify()
+                inPlayVars.add(inPlay)
+
+                // Single check per surprise character at the start
+                if (Random.nextFloat() < chance) {
+                    // SUCCESS: Nearly guarantee inclusion
+                    surpriseBonusWeights.add(2000)
+
+                    // Symmetry breaker: Pick one priority player
+                    val availablePlayers = (0 until numPlayers).filter { it !in pickedPlayers }
+                    if (availablePlayers.isNotEmpty()) {
+                        val pIdx = availablePlayers.random()
+                        pickedPlayers.add(pIdx)
+                        surpriseWeighting[pIdx][cIdx] = 50 // Small tie-breaker
+                    }
+                } else {
+                    // FAILURE: Nearly guarantee exclusion
+                    surpriseBonusWeights.add(-2000)
+                }
+            }
+        }
+
         val profitMatrix = Array(numPlayers) { pIdx ->
             IntArray(numChars) { cIdx ->
                 calculateBaseProfit(
                     players[pIdx],
-                    availableChars[cIdx]
+                    availableChars[cIdx],
+                    surpriseWeighting[pIdx][cIdx]
                 )
             }
         }
@@ -69,16 +152,6 @@ class RoleSolver (
                 )
             }
         }
-
-        // 2. Define Variables
-        // assignments[i] represents the index of the character assigned to player i
-        val assignments = model.intVarArray("assignments", numPlayers, 0, numChars - 1)
-        // reservations[i] represents the index of the character reserved by player i
-        val reservations = model.intVarArray("reservations", numPlayers, 0, none)
-
-        // realOccurrences[j] represents how many times character j is assigned overall
-        val realOccurrences = model.intVarArray("realOccurrences", numChars, 0, numPlayers)
-        val reservedOccurrences = model.intVarArray("reservedOccurrences", numChars + 1, 0, numPlayers)
 
         // 3. Max Instances Constraint
         for (j in 0 until numChars) {
@@ -104,7 +177,7 @@ class RoleSolver (
                 }
             }
         }
-        
+
         // 4. Enforce Deception Logic
         val validTuples = Tuples(true)
         for (j in 0 until numChars) {
@@ -229,9 +302,7 @@ class RoleSolver (
 
         // 8. Marionette-Balloonist-Modifier Constraint
         val balloonistIdx = availableChars.indexOfFirst { it.id == "balloonist" }
-        val marionetteThinkingBalloonist = model.boolVar("marionetteThinkingBalloonist")
-
-        if (marionetteIdx >= 0 && balloonistIdx >= 0) {
+        val marionetteThinkingBalloonist = if (marionetteIdx >= 0 && balloonistIdx >= 0) {
             val playerIsMarioBalloonist = model.boolVarArray("playerIsMarioBalloonist", numPlayers)
 
             for (i in 0 until numPlayers) {
@@ -244,13 +315,9 @@ class RoleSolver (
                 )
             }
             // marionetteThinkingBalloonist is true if ANY player meets the criteria
-            val anyMarionetteBalloonist = model.or(*playerIsMarioBalloonist).reify()
-            model.ifThen(
-                anyMarionetteBalloonist,
-                model.arithm(marionetteThinkingBalloonist, "=", 1)
-            )
+            model.or(*playerIsMarioBalloonist).reify()
         } else {
-            model.arithm(marionetteThinkingBalloonist, "=", 0).post()
+            model.boolVar(false)
         }
 
         // 9. Setup Modifiers and Type Counts
@@ -264,62 +331,73 @@ class RoleSolver (
         )
 
         // 10. Objective Function (Maximize Player Preferences)
-        val baseScores = model.intVarArray("baseScores", numPlayers, 0, 10000)
-        val reserveScores = model.intVarArray("reserveScores", numPlayers, 0, 10000)
-        val totalScore = model.intVar("totalScore", 0, 999999)
+        val baseScores = model.intVarArray("baseScores", numPlayers, 0, 16383)
+        val reserveScores = model.intVarArray("reserveScores", numPlayers, 0, 16383)
+
+        val maxSurpriseAbs = inPlayVars.size * 2000
+        val totalSurpriseBonus = model.intVar("totalSurpriseBonus", -maxSurpriseAbs, maxSurpriseAbs)
+        val totalScore = model.intVar("totalScore", -1000000, 1000000)
+
+        if (inPlayVars.isNotEmpty()) {
+            model.scalar(inPlayVars.toTypedArray(), surpriseBonusWeights.toIntArray(), "=", totalSurpriseBonus).post()
+        } else {
+            model.arithm(totalSurpriseBonus, "=", 0).post()
+        }
 
         for (i in 0 until numPlayers) {
             // playerScore[i] = profitMatrix[i][assignments[i]]
             model.element(baseScores[i], profitMatrix[i], assignments[i]).post()
             model.element(reserveScores[i], reserveProfitMatrix[i], reservations[i]).post()
         }
-        val allScores = baseScores + reserveScores
+        // Add the global bonus to the total score
+        val allScores = baseScores + reserveScores + arrayOf(totalSurpriseBonus)
         model.sum(allScores, "=", totalScore).post()
 
         // 11. Solve
         model.setObjective(Model.MAXIMIZE, totalScore)
-        val solver = model.solver
         solver.limitTime("30s") // 30 second time limit, may need to decrease. In most cases, the solver finds an optimal solution within 1s.
 
         var bestAssignment: Map<Player, Pair<Character, Character?>> = emptyMap()
+        var maxScoreFound = Int.MIN_VALUE
 
-        // Iterate through solutions to find the maximum
         while (solver.solve()) {
-            val currentMap = mutableMapOf<Player, Pair<Character, Character?>>()
-            for (i in 0 until numPlayers) {
-                val realChar = availableChars[assignments[i].value]
-                val resIdx = reservations[i].value
-                val fakeChar = if (resIdx == none) null else availableChars[resIdx]
-
-                currentMap[players[i]] = Pair(realChar, fakeChar)
+            val currentScore = totalScore.value
+            // Only update assignment map if we found a strictly better solution
+            if (currentScore > maxScoreFound) {
+                maxScoreFound = currentScore
+                val currentMap = mutableMapOf<Player, Pair<Character, Character?>>()
+                for (i in 0 until numPlayers) {
+                    val realChar = availableChars[assignments[i].value]
+                    val resIdx = reservations[i].value
+                    val fakeChar = if (resIdx == none) null else availableChars[resIdx]
+                    currentMap[players[i]] = Pair(realChar, fakeChar)
+                }
+                bestAssignment = currentMap
             }
-            bestAssignment = currentMap
+
+            // Immediate update for the new best solution
+            onProgress(getProgress()!!)
         }
 
-        return@withContext bestAssignment
+        return bestAssignment
     }
 
-    private fun calculateBaseProfit(player: Player, char: Character): Int {
-        var baseProfit = 0
+    private fun calculateBaseProfit(player: Player, char: Character, surpriseWeight: Int): Int {
+        var baseProfit: Int
         val selectedPosition = player.selectedChars.indexOf(char)
-        val surpriseChance = surpriseChances[char] ?: 0f
-        val playerSurpriseChance = if (surpriseChance == 1f) 1f else surpriseChance / (players.size - 1) // By dividing this way, the expected value of each surprise character being applied per solution is equal to surpriseChance
 
         if (selectedPosition != -1) {
             if (playerPriorityToggle) {
                 val selectedListSize = player.selectedChars.size
-                // (int) (100 * (size - pos) / size) gives 100 baseProfit at position 0, linearly down to 1 baseProfit at the final position
                 baseProfit = (100 * ((1f * selectedListSize - selectedPosition) / selectedListSize)).toInt()
             } else baseProfit = 100
         } else {
-            // Handle unselectable chance by injecting random probability into the deterministic solver matrix
-            if (!char.thinksTheyAre.isEmpty()) {
-                baseProfit = if (Random.nextFloat() < playerSurpriseChance) 150 // high baseProfit if chance succeeds
-                else -150 // negative baseProfit to cancel out the reserveProfit if chance fails
-            }
+            baseProfit = surpriseWeight // Uses the 50 point tie-breaker or 0
         }
-        if (selectedPriority == SelectedPriorities.TYPE && player.typePriority == char.type) baseProfit += 150 // very high priority if type matches (storyteller gets the final say)
+
+        if (selectedPriority == SelectedPriorities.TYPE && player.typePriority == char.type) baseProfit += 150
         else if (selectedPriority == SelectedPriorities.ALIGNMENT && player.alignmentPriority == char.alignment) baseProfit += 150
+
         return baseProfit * player.historyWeight
     }
 
@@ -442,8 +520,11 @@ class RoleSolver (
                 model.arithm(isLegion, "=", 1)
             )
 
-            val minLegion = ceil(numPlayers / 2.0).toInt()
-            val maxLegion = (numPlayers * 0.75).toInt()
+            // In a Legion game, the number of good and evils should generally be reversed
+            //      I interpreted this as + or - 1, like the Sentinel
+            val baseGood = baseCount.townsfolk + baseCount.outsider
+            val minLegion = baseGood - 1
+            val maxLegion = baseGood + 1
 
             // Constrain boundaries when Legion is in play
             model.ifThen(isLegion, model.arithm(legionOcc, ">=", minLegion))
@@ -579,7 +660,7 @@ class RoleSolver (
                 model.times(occurrences[j], choiceDem, dDem).post()
                 deltaDems.add(dDem)
 
-                // Specifically for the Balloonist, if they are reserved by a surprise character, their additive modifiers are applied
+                // Specifically for the Balloonist, if they are reserved by specifically the marionette, their additive modifiers are applied
                 if (char.id == "balloonist") {
                     // create delta variables specifically for the Marionette interaction
                     val marioDovTF = model.intVar("marioDovTF_$j", -numPlayers, numPlayers)
