@@ -19,9 +19,11 @@ import clockplucker.SelectedPriorities
 import org.chocosolver.solver.Model
 import org.chocosolver.solver.Solver
 import org.chocosolver.solver.constraints.extension.Tuples
+import org.chocosolver.solver.search.strategy.Search
 import org.chocosolver.solver.variables.BoolVar
 import org.chocosolver.solver.variables.IntVar
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.collections.toTypedArray
 import kotlin.random.Random
 
 // todo: an assigned Summoner will never allow a Marionette to generate,
@@ -97,11 +99,30 @@ class RoleSolver (
         val reservations = model.intVarArray("reservations", numPlayers, 0, none)
 
         // realOccurrences[j] represents how many times character j is assigned overall
-        val realOccurrences = model.intVarArray("realOccurrences", numChars, 0, numPlayers)
-        val reservedOccurrences = model.intVarArray("reservedOccurrences", numChars + 1, 0, numPlayers)
+        val realOccurrences = Array(numChars) { j ->
+            val char = availableChars[j]
+            val maxOcc = if (containsPope && char.alignment == CharAlignment.GOOD) numPlayers else char.maxInstances
+            model.intVar("realOcc_${char.id}", 0, minOf(numPlayers, maxOcc))
+        }
+        val reservedOccurrences = Array(numChars + 1) { j ->
+            val maxOcc = if (j < numChars) {
+                val char = availableChars[j]
+                if (containsPope && char.alignment == CharAlignment.GOOD) numPlayers else char.maxInstances
+            } else numPlayers
+            model.intVar("resOcc_$j", 0, maxOcc)
+        }
 
+        val charIndices = IntArray(numChars) { it }
+        model.globalCardinality(assignments, charIndices, realOccurrences, true).post()
+
+        val resIndices = IntArray(numChars + 1) { it }
+        model.globalCardinality(reservations, resIndices, reservedOccurrences, true).post()
 
         // 2. Build the Objective/Profit Matrix & Surprise Logic
+        val playerPrefMaps = players.map { player ->
+            player.selectedChars.withIndex().associate { it.value to it.index }
+        }
+
         val surpriseWeighting = Array(numPlayers) { IntArray(numChars) }
         val inPlayVars = mutableListOf<BoolVar>()
         val surpriseBonusWeights = mutableListOf<Int>()
@@ -138,7 +159,8 @@ class RoleSolver (
                 calculateBaseProfit(
                     players[pIdx],
                     availableChars[cIdx],
-                    surpriseWeighting[pIdx][cIdx]
+                    surpriseWeighting[pIdx][cIdx],
+                    playerPrefMaps[pIdx]
                 )
             }
         }
@@ -148,32 +170,22 @@ class RoleSolver (
                 if (cIdx == none) 0
                 else calculateReserveProfit(
                     players[pIdx],
-                    availableChars[cIdx]
+                    availableChars[cIdx],
+                    playerPrefMaps[pIdx]
                 )
             }
         }
 
         // 3. Max Instances Constraint
         for (j in 0 until numChars) {
-            model.count(j, assignments, realOccurrences[j]).post()
-            model.count(j, reservations, reservedOccurrences[j]).post()
-
             val charJ = availableChars[j]
-            val totalOcc = model.intVar("totalOcc_$j", 0, numPlayers)
 
             // If it's a Minion or Demon, real assignments and reservations don't stack for the limit.
             // This allows a player to BE the Imp while another player (Lunatic) THINKS they are the Imp.
-            if (charJ.type == CharType.MINION || charJ.type == CharType.DEMON) {
-                // For evil roles, we just ensure physical assignments don't exceed limit
-                // and reservations don't exceed limit independently.
-                model.arithm(realOccurrences[j], "<=", charJ.maxInstances).post()
-                model.arithm(reservedOccurrences[j], "<=", charJ.maxInstances).post()
-            } else {
+            if (charJ.type != CharType.MINION && charJ.type != CharType.DEMON) {
                 // For others (Townsfolk/Outsiders), physical + reserved must fit in the bag
-                model.arithm(realOccurrences[j], "+", reservedOccurrences[j], "=", totalOcc).post()
-
                 if (!(containsPope && charJ.alignment == CharAlignment.GOOD)) {
-                    model.arithm(totalOcc, "<=", charJ.maxInstances).post()
+                    model.arithm(realOccurrences[j], "+", reservedOccurrences[j], "<=", charJ.maxInstances).post()
                 }
             }
         }
@@ -209,17 +221,22 @@ class RoleSolver (
         // 5. Dependencies and Hard Jinxes
         for (j in 0 until numChars) {
             val char = availableChars[j]
-            val inPlay = model.arithm(realOccurrences[j], ">", 0).reify()
 
             // Hard Jinxes (Mutual Exclusion)
             if (char.hardJinxedWith.isNotEmpty()) {
+                val inPlay = model.arithm(realOccurrences[j], ">", 0).reify()
                 char.hardJinxedWith.forEach { jinxId ->
                     val jinxIdx = availableChars.indexOfFirst { it.id == jinxId }
                     if (jinxIdx >= 0) {
-                        model.ifThen(
-                            inPlay,
-                            model.arithm(realOccurrences[jinxIdx], "=", 0)
-                        )
+                        val otherChar = availableChars[jinxIdx]
+                        if (char.maxInstances == 1 && otherChar.maxInstances == 1) {
+                            model.arithm(realOccurrences[j], "+", realOccurrences[jinxIdx], "<=", 1).post()
+                        } else {
+                            model.ifThen(
+                                inPlay,
+                                model.arithm(realOccurrences[jinxIdx], "=", 0)
+                            )
+                        }
                     }
                 }
             }
@@ -228,6 +245,7 @@ class RoleSolver (
             if (char.dependsOn != null) {
                 val depIdx = availableChars.indexOfFirst { it.id == char.dependsOn }
                 if (depIdx >= 0) {
+                    val inPlay = model.arithm(realOccurrences[j], ">", 0).reify()
                     model.ifThen(
                         inPlay,
                         model.arithm(realOccurrences[depIdx], ">", 0)
@@ -242,22 +260,14 @@ class RoleSolver (
 
         if (marionetteIdx >= 0) {
             // Create a boolean variable for each player: "is this player the marionette?"
-            val playerIsMarionette = model.boolVarArray("playerIsMarionette", numPlayers)
-            for (i in 0 until numPlayers) {
-                model.ifOnlyIf(
-                    model.arithm(assignments[i], "=", marionetteIdx),
-                    model.arithm(playerIsMarionette[i], "=", 1)
-                )
+            val playerIsMarionette = Array(numPlayers) { i ->
+                model.arithm(assignments[i], "=", marionetteIdx).reify()
             }
 
             // Create a boolean variable for each player: "is this player a demon?"
-            val playerIsDemon = model.boolVarArray("playerIsDemon", numPlayers)
-            for (i in 0 until numPlayers) {
-                // A player is a demon if their assignment is one of the demon indices
-                model.ifOnlyIf(
-                    model.member(assignments[i], demonIndices.toIntArray()),
-                    model.arithm(playerIsDemon[i], "=", 1)
-                )
+            val demonIndicesArray = demonIndices.toIntArray()
+            val playerIsDemon = Array(numPlayers) { i ->
+                model.member(assignments[i], demonIndicesArray).reify()
             }
 
             // Enforce: If Player I is Marionette, then Player I-1 OR Player I+1 must be Demon
@@ -279,17 +289,11 @@ class RoleSolver (
 
         // Only apply if all relevant characters exist in the current script/availableChars
         if (marionetteIdx >= 0 && huntsmanIdx >= 0 && damselIdx >= 0) {
-            val marionetteHasHuntsmanRes = model.boolVarArray("marionetteHasHuntsmanRes", numPlayers)
-
-            for (i in 0 until numPlayers) {
+            val marionetteHasHuntsmanRes = Array(numPlayers) { i ->
                 // Condition: assignments[i] == Marionette AND reservations[i] == Huntsman
                 val isMarionette = model.arithm(assignments[i], "=", marionetteIdx).reify()
                 val hasHuntsmanRes = model.arithm(reservations[i], "=", huntsmanIdx).reify()
-
-                model.ifOnlyIf(
-                    model.and(isMarionette, hasHuntsmanRes),
-                    model.arithm(marionetteHasHuntsmanRes[i], "=", 1)
-                )
+                model.and(isMarionette, hasHuntsmanRes).reify()
             }
 
             // If any player satisfies the condition, damsel must be in play
@@ -303,16 +307,10 @@ class RoleSolver (
         // 8. Marionette-Balloonist-Modifier Constraint
         val balloonistIdx = availableChars.indexOfFirst { it.id == "balloonist" }
         val marionetteThinkingBalloonist = if (marionetteIdx >= 0 && balloonistIdx >= 0) {
-            val playerIsMarioBalloonist = model.boolVarArray("playerIsMarioBalloonist", numPlayers)
-
-            for (i in 0 until numPlayers) {
+            val playerIsMarioBalloonist = Array(numPlayers) { i ->
                 val isMarionette = model.arithm(assignments[i], "=", marionetteIdx).reify()
                 val hasBalloonistRes = model.arithm(reservations[i], "=", balloonistIdx).reify()
-
-                model.ifOnlyIf(
-                    model.and(isMarionette, hasBalloonistRes),
-                    model.arithm(playerIsMarioBalloonist[i], "=", 1)
-                )
+                model.and(isMarionette, hasBalloonistRes).reify()
             }
             // marionetteThinkingBalloonist is true if ANY player meets the criteria
             model.or(*playerIsMarioBalloonist).reify()
@@ -320,8 +318,7 @@ class RoleSolver (
             model.boolVar(false)
         }
 
-        // 9. Setup Modifiers and Type Counts
-        applyTypeCountConstraints(
+        val extraDecisionVars = applyTypeCountConstraints(
             model,
             realOccurrences,
             availableChars,
@@ -355,7 +352,68 @@ class RoleSolver (
 
         // 11. Solve
         model.setObjective(Model.MAXIMIZE, totalScore)
-        solver.limitTime("30s") // 30 second time limit, may need to decrease. In most cases, the solver finds an optimal solution within 1s.
+
+        val sortedChars = Array(numPlayers) { pIdx ->
+            availableChars.indices.sortedByDescending { cIdx -> profitMatrix[pIdx][cIdx] }.toIntArray()
+        }
+        val sortedRes = Array(numPlayers) { pIdx ->
+            (0 until numChars + 1).sortedByDescending { cIdx ->
+                if (cIdx == none) 0
+                else reserveProfitMatrix[pIdx][cIdx]
+            }.toIntArray()
+        }
+
+        val assignmentToIndex = assignments.withIndex().associate { it.value to it.index }
+        val reservationToIndex = reservations.withIndex().associate { it.value to it.index }
+
+        solver.setSearch(
+            Search.intVarSearch(
+                { vars ->
+                    var best: IntVar? = null
+                    for (v in vars) {
+                        if (!v.isInstantiated) {
+                            if (best == null || v.domainSize < best.domainSize) {
+                                best = v
+                            }
+                        }
+                    }
+                    best
+                },
+                { v ->
+                    val pIdx = assignmentToIndex[v]!!
+                    val sorted = sortedChars[pIdx]
+                    for (valIdx in sorted) {
+                        if (v.contains(valIdx)) return@intVarSearch valIdx
+                    }
+                    v.lb
+                },
+                *assignments
+            ),
+            Search.intVarSearch(
+                { vars ->
+                    var best: IntVar? = null
+                    for (v in vars) {
+                        if (!v.isInstantiated) {
+                            if (best == null || v.domainSize < best.domainSize) {
+                                best = v
+                            }
+                        }
+                    }
+                    best
+                },
+                { v ->
+                    val pIdx = reservationToIndex[v]!!
+                    val sorted = sortedRes[pIdx]
+                    for (valIdx in sorted) {
+                        if (v.contains(valIdx)) return@intVarSearch valIdx
+                    }
+                    v.lb
+                },
+                *reservations
+            ),
+            Search.intVarSearch(*extraDecisionVars.toTypedArray())
+        )
+        solver.limitTime("5s") // 5 second time limit. In most cases, the solver finds a great solution within 1s.
 
         var bestAssignment: Map<Player, Pair<Character, Character?>> = emptyMap()
         var maxScoreFound = Int.MIN_VALUE
@@ -382,9 +440,9 @@ class RoleSolver (
         return bestAssignment
     }
 
-    private fun calculateBaseProfit(player: Player, char: Character, surpriseWeight: Int): Int {
+    private fun calculateBaseProfit(player: Player, char: Character, surpriseWeight: Int, prefMap: Map<Character, Int>): Int {
         var baseProfit: Int
-        val selectedPosition = player.selectedChars.indexOf(char)
+        val selectedPosition = prefMap[char] ?: -1
 
         if (selectedPosition != -1) {
             if (playerPriorityToggle) {
@@ -401,9 +459,9 @@ class RoleSolver (
         return baseProfit * player.historyWeight
     }
 
-    private fun calculateReserveProfit(player: Player, char: Character): Int {
+    private fun calculateReserveProfit(player: Player, char: Character, prefMap: Map<Character, Int>): Int {
         var reserveProfit = 0
-        val selectedPosition = player.selectedChars.indexOf(char)
+        val selectedPosition = prefMap[char] ?: -1
 
         if (selectedPosition != -1) {
             if (playerPriorityToggle) {
@@ -424,13 +482,13 @@ class RoleSolver (
         numPlayers: Int,
         baseCount: Count,
         marionetteThinkingBalloonist: BoolVar
-    ) {
+    ): List<IntVar> {
+        val decisionVars = mutableListOf<IntVar>()
+
         val tfVars = mutableListOf<IntVar>()
         val outVars = mutableListOf<IntVar>()
         val minVars = mutableListOf<IntVar>()
         val demVars = mutableListOf<IntVar>()
-
-        var legionIndex = -1
 
         chars.forEachIndexed { index, char ->
             when (char.type) {
@@ -440,7 +498,6 @@ class RoleSolver (
                 CharType.DEMON -> demVars.add(occurrences[index])
                 else -> {}
             }
-            if (char.id == "legion") legionIndex = index
         }
 
         val actualTF = model.intVar("actualTF", 0, numPlayers)
@@ -453,14 +510,14 @@ class RoleSolver (
         if (minVars.isNotEmpty()) model.sum(minVars.toTypedArray(), "=", actualMin).post() else model.arithm(actualMin, "=", 0).post()
         if (demVars.isNotEmpty()) model.sum(demVars.toTypedArray(), "=", actualDem).post() else model.arithm(actualDem, "=", 0).post()
 
+        val legionIndex = chars.indexOfFirst { it.id == "legion" }
+
         // --- STAGE 1: OVERRIDE MODIFIERS & DEFICIT REDISTRIBUTION ---
 
         // Enforce max 1 override-granting character active
         val charsWithOverrides = chars.indices.filter { chars[it].overrideModifiers.isNotEmpty() }
         val overrideInPlayVars = charsWithOverrides.map { j ->
-            val inPlay = model.boolVar("overrideInPlay_$j")
-            model.ifOnlyIf(model.arithm(occurrences[j], ">", 0), model.arithm(inPlay, "=", 1))
-            inPlay
+            model.arithm(occurrences[j], ">", 0).reify()
         }.toTypedArray()
 
         if (overrideInPlayVars.isNotEmpty()) {
@@ -474,7 +531,7 @@ class RoleSolver (
         val overriddenMin = model.boolVar("overriddenMin")
         val overriddenDem = model.boolVar("overriddenDem")
 
-        fun overrideVarsFor(type: CharType): Array<IntVar> {
+        fun overrideVarsFor(type: CharType): Array<BoolVar> {
             return charsWithOverrides.filter { chars[it].overrideModifiers.contains(type) }
                 .map { j -> overrideInPlayVars[charsWithOverrides.indexOf(j)] }
                 .toTypedArray()
@@ -531,10 +588,10 @@ class RoleSolver (
             model.ifThen(isLegion, model.arithm(legionOcc, "<=", maxLegion))
 
             // If Legion is in play, there can be NO other demons
-            for (j in chars.indices) {
-                if (j != legionIndex && chars[j].type == CharType.DEMON) {
-                    model.ifThen(isLegion, model.arithm(occurrences[j], "=", 0))
-                }
+            val otherDemons = chars.indices.filter { it != legionIndex && chars[it].type == CharType.DEMON }
+                .map { occurrences[it] }.toTypedArray()
+            if (otherDemons.isNotEmpty()) {
+                model.ifThen(isLegion, model.sum(otherDemons, "=", 0))
             }
 
             // Calculate the extra Demon slots that Legion consumes beyond the base count
@@ -550,16 +607,8 @@ class RoleSolver (
         }
 
         // Set the lower bound for the extra tf / outsiders
-        model.ifThenElse(
-            isLegion,
-            model.arithm(tfLB, "=", -numPlayers),
-            model.arithm(tfLB, "=", 0)
-        )
-        model.ifThenElse(
-            isLegion,
-            model.arithm(outLB, "=", -numPlayers),
-            model.arithm(outLB, "=", 0)
-        )
+        model.times(isLegion, -numPlayers, tfLB).post()
+        model.times(isLegion, -numPlayers, outLB).post()
 
         // We expand domain sizes for Extra variables to handle Legion eating into them
         val extraTF = model.intVar("extraTF", -numPlayers, numPlayers)
@@ -609,80 +658,66 @@ class RoleSolver (
             val char = chars[j]
             if (char.additiveModifiers.isEmpty()) continue
 
+            val choiceTF: IntVar
+            val choiceOut: IntVar
+            val choiceMin: IntVar
+            val choiceDem: IntVar
+
             if (char.additiveModifiers.size == 1) {
                 val mod = char.additiveModifiers[0]
-                if (mod.townsfolk != 0) {
-                    val d = model.intVar("dTF_$j", -numPlayers, numPlayers)
-                    model.arithm(d, "=", occurrences[j], "*", mod.townsfolk).post()
-                    deltaTFs.add(d)
-                }
-                if (mod.outsider != 0) {
-                    val d = model.intVar("dOut_$j", -numPlayers, numPlayers)
-                    model.arithm(d, "=", occurrences[j], "*", mod.outsider).post()
-                    deltaOuts.add(d)
-                }
-                if (mod.minion != 0) {
-                    val d = model.intVar("dMin_$j", -numPlayers, numPlayers)
-                    model.arithm(d, "=", occurrences[j], "*", mod.minion).post()
-                    deltaMins.add(d)
-                }
-                if (mod.demon != 0) {
-                    val d = model.intVar("dDem_$j", -numPlayers, numPlayers)
-                    model.arithm(d, "=", occurrences[j], "*", mod.demon).post()
-                    deltaDems.add(d)
-                }
+                choiceTF = model.intVar(mod.townsfolk)
+                choiceOut = model.intVar(mod.outsider)
+                choiceMin = model.intVar(mod.minion)
+                choiceDem = model.intVar(mod.demon)
             } else {
                 val choiceIdx = model.intVar("choiceIdx_$j", 0, char.additiveModifiers.size - 1)
-                val choiceTF = model.intVar("choiceTF_$j", -numPlayers, numPlayers)
-                val choiceOut = model.intVar("choiceOut_$j", -numPlayers, numPlayers)
-                val choiceMin = model.intVar("choiceMin_$j", -numPlayers, numPlayers)
-                val choiceDem = model.intVar("choiceDem_$j", -numPlayers, numPlayers)
+                decisionVars.add(choiceIdx)
+                choiceTF = model.intVar("choiceTF_$j", -numPlayers, numPlayers)
+                choiceOut = model.intVar("choiceOut_$j", -numPlayers, numPlayers)
+                choiceMin = model.intVar("choiceMin_$j", -numPlayers, numPlayers)
+                choiceDem = model.intVar("choiceDem_$j", -numPlayers, numPlayers)
 
                 val tuples = Tuples(true)
                 char.additiveModifiers.forEachIndexed { idx, mod ->
                     tuples.add(idx, mod.townsfolk, mod.outsider, mod.minion, mod.demon)
                 }
                 model.table(arrayOf(choiceIdx, choiceTF, choiceOut, choiceMin, choiceDem), tuples).post()
+            }
 
-                val dTF = model.intVar("dTF_$j", -numPlayers, numPlayers)
-                model.times(occurrences[j], choiceTF, dTF).post()
-                deltaTFs.add(dTF)
+            val dTF = model.intVar("dTF_$j", -numPlayers, numPlayers)
+            model.times(occurrences[j], choiceTF, dTF).post()
+            deltaTFs.add(dTF)
 
-                val dOut = model.intVar("dOut_$j", -numPlayers, numPlayers)
-                model.times(occurrences[j], choiceOut, dOut).post()
-                deltaOuts.add(dOut)
+            val dOut = model.intVar("dOut_$j", -numPlayers, numPlayers)
+            model.times(occurrences[j], choiceOut, dOut).post()
+            deltaOuts.add(dOut)
 
-                val dMin = model.intVar("dMin_$j", -numPlayers, numPlayers)
-                model.times(occurrences[j], choiceMin, dMin).post()
-                deltaMins.add(dMin)
+            val dMin = model.intVar("dMin_$j", -numPlayers, numPlayers)
+            model.times(occurrences[j], choiceMin, dMin).post()
+            deltaMins.add(dMin)
 
-                val dDem = model.intVar("dDem_$j", -numPlayers, numPlayers)
-                model.times(occurrences[j], choiceDem, dDem).post()
-                deltaDems.add(dDem)
+            val dDem = model.intVar("dDem_$j", -numPlayers, numPlayers)
+            model.times(occurrences[j], choiceDem, dDem).post()
+            deltaDems.add(dDem)
 
-                // Specifically for the Balloonist, if they are reserved by specifically the marionette, their additive modifiers are applied
-                if (char.id == "balloonist") {
-                    // create delta variables specifically for the Marionette interaction
-                    val marioDovTF = model.intVar("marioDovTF_$j", -numPlayers, numPlayers)
-                    val marioDovOut = model.intVar("marioDovOut_$j", -numPlayers, numPlayers)
+            // Specifically for the Balloonist, if they are reserved by specifically the marionette, their additive modifiers are applied
+            if (char.id == "balloonist") {
+                val marioDovTF = model.intVar("marioDovTF_$j", -numPlayers, numPlayers)
+                val marioDovOut = model.intVar("marioDovOut_$j", -numPlayers, numPlayers)
 
-                    // If marionetteThinkingBalloonist is true, these deltas equal the modifier values
-                    // If false, these deltas equal 0
-                    model.ifThenElse(
-                        marionetteThinkingBalloonist,
-                        model.arithm(marioDovTF, "=", choiceTF),
-                        model.arithm(marioDovTF, "=", 0)
-                    )
-                    model.ifThenElse(
-                        marionetteThinkingBalloonist,
-                        model.arithm(marioDovOut, "=", choiceOut),
-                        model.arithm(marioDovOut, "=", 0)
-                    )
+                model.ifThenElse(
+                    marionetteThinkingBalloonist,
+                    model.arithm(marioDovTF, "=", choiceTF),
+                    model.arithm(marioDovTF, "=", 0)
+                )
+                model.ifThenElse(
+                    marionetteThinkingBalloonist,
+                    model.arithm(marioDovOut, "=", choiceOut),
+                    model.arithm(marioDovOut, "=", 0)
+                )
 
-                    // Add these "extra" deltas to the master lists
-                    deltaTFs.add(marioDovTF)
-                    deltaOuts.add(marioDovOut)
-                }
+                deltaTFs.add(marioDovTF)
+                deltaOuts.add(marioDovOut)
             }
         }
 
@@ -702,6 +737,8 @@ class RoleSolver (
 
         val sentinelTF = model.intVar("sentinelTF", -1, 1)
         val sentinelOut = model.intVar("sentinelOut", -1, 1)
+        decisionVars.add(sentinelTF)
+        decisionVars.add(sentinelOut)
 
         if (autoSentinel) {
             // They must precisely offset one another: either (-1, 1), (0, 0), or (1, -1)
@@ -732,5 +769,7 @@ class RoleSolver (
         model.arithm(actualOut, "=", targetOut).post()
         model.arithm(actualMin, "=", targetMin).post()
         model.arithm(actualDem, "=", targetDem).post()
+
+        return decisionVars
     }
 }

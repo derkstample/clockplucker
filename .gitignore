@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+app/src/main/res/values/charater_strings.xml
+app/src/main/res/values/jinx_strings.xml
+app/src/main/res/drawable/icon_*

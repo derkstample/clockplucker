@@ -1894,202 +1894,6 @@ class RoleSolverTest {
         assert(assignments[players[7]]?.first?.id == "d1")
     }
 
-    //TODO: either fix or delete test. with the change to surprise characters we can no longer
-    //      guarantee they are assigned specific roles
-    @Test
-    fun testRoleSolverMarionetteHuntsman() = runBlocking {
-        // 1. Create a list of 6 townsfolk, 2 outsiders, 2 minions, and 1 demon.
-        val huntsman = Character(
-            id = "huntsman",
-            name = TextValue.Raw("Huntsman"),
-            type = CharType.TOWNSFOLK,
-            icon = 0,
-            ability = TextValue.Raw("..."),
-            dependsOn = "damsel"
-        )
-        val damsel = Character(
-            id = "damsel",
-            name = TextValue.Raw("Damsel"),
-            type = CharType.OUTSIDER,
-            icon = 0,
-            ability = TextValue.Raw("...")
-        )
-        val marionette = Character(
-            id = "marionette",
-            name = TextValue.Raw("Marionette"),
-            type = CharType.MINION,
-            icon = 0,
-            ability = TextValue.Raw("..."),
-            thinksTheyAre = listOf(CharType.TOWNSFOLK)
-        )
-        val demon = Character(
-            id = "demon",
-            name = TextValue.Raw("Demon"),
-            type = CharType.DEMON,
-            icon = 0,
-            ability = TextValue.Raw("...")
-        )
-
-        val characters = listOf(huntsman, damsel, marionette, demon) +
-                (2..6).map { i ->
-                    Character(
-                        "t$i",
-                        TextValue.Raw("Townsfolk $i"),
-                        type = CharType.TOWNSFOLK,
-                        icon = 0,
-                        ability = TextValue.Raw("")
-                    )
-                } +
-                listOf(
-                    Character(
-                        "o2",
-                        TextValue.Raw("Outsider 2"),
-                        type = CharType.OUTSIDER,
-                        icon = 0,
-                        ability = TextValue.Raw("")
-                    ),
-                    Character(
-                        "m2",
-                        TextValue.Raw("Minion 2"),
-                        type = CharType.MINION,
-                        icon = 0,
-                        ability = TextValue.Raw("")
-                    )
-                )
-
-        // 2. Create a list of 6 players. All players want to be the Huntsman
-        val players = (1..6).map { Player(id = UUID.randomUUID(), name = "Player $it", selectedChars = listOf(huntsman)) }
-
-        val baseCount6 = TypeCountLookup().getBaseCounts(players.size)
-
-        val solver = RoleSolver(
-            players = players,
-            availableChars = characters,
-            baseCount = baseCount6,
-            surpriseChances = mapOf(marionette to 1f)
-        )
-
-        // 3. Solve
-        val assignments = solver.optimizeAssignments()
-
-        // 4. Verify results
-        assert(assignments.isNotEmpty())
-
-        val marionetteEntry = assignments.entries.find { it.value.first.id == "marionette" }
-        assertNotNull("Marionette should be assigned", marionetteEntry)
-        assertEquals("Marionette should think they are the huntsman", "huntsman", marionetteEntry?.value?.second?.id)
-
-        val damselEntry = assignments.entries.find { it.value.first.id == "damsel" }
-        assertNotNull("Damsel should be assigned", damselEntry)
-
-        assert(marionetteEntry?.key != damselEntry?.key) { "Marionette and Damsel should be assigned to different players" }
-    }
-
-    //TODO: same here
-    @Test
-    fun testRoleSolverMarionetteBalloonist() = runBlocking {
-        // 1. Create a list of 6 townsfolk, 2 outsiders, 2 minions, and 1 demon.
-        val balloonist = Character(
-            id = "balloonist",
-            name = TextValue.Raw("Balloonist"),
-            type = CharType.TOWNSFOLK,
-            icon = 0,
-            ability = TextValue.Raw("..."),
-            additiveModifiers = listOf(Count(), Count(townsfolk = -1, outsider = 1))
-        )
-        val townsfolk = Character(
-            id = "townsfolk",
-            name = TextValue.Raw("Townsfolk"),
-            type = CharType.TOWNSFOLK,
-            icon = 0,
-            ability = TextValue.Raw("...")
-        )
-        val marionette = Character(
-            id = "marionette",
-            name = TextValue.Raw("Marionette"),
-            type = CharType.MINION,
-            icon = 0,
-            ability = TextValue.Raw("..."),
-            thinksTheyAre = listOf(CharType.TOWNSFOLK)
-        )
-        val outsider = Character(
-            id = "outsider",
-            name = TextValue.Raw("Outsider"),
-            type = CharType.OUTSIDER,
-            icon = 0,
-            ability = TextValue.Raw("...")
-        )
-        val demon = Character(
-            id = "demon",
-            name = TextValue.Raw("Demon"),
-            type = CharType.DEMON,
-            icon = 0,
-            ability = TextValue.Raw("...")
-        )
-
-        val characters = listOf(balloonist, townsfolk, outsider, marionette, demon) +
-                (3..6).map { i ->
-                    Character(
-                        "t$i",
-                        TextValue.Raw("Townsfolk $i"),
-                        type = CharType.TOWNSFOLK,
-                        icon = 0,
-                        ability = TextValue.Raw("")
-                    )
-                } +
-                listOf(
-                    Character(
-                        "o2",
-                        TextValue.Raw("Outsider 2"),
-                        type = CharType.OUTSIDER,
-                        icon = 0,
-                        ability = TextValue.Raw("")
-                    ),
-                    Character(
-                        "m2",
-                        TextValue.Raw("Minion 2"),
-                        type = CharType.MINION,
-                        icon = 0,
-                        ability = TextValue.Raw("")
-                    ),
-                )
-
-        // 2. Create a list of 5 players.
-        val players = (1..5).map { i ->
-            when (i) {
-                1 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(balloonist), historyWeight = 3)
-                2 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(demon))
-                3 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(balloonist))
-                4 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(outsider)) // normally cannot be assigned outsider, since 5 player count
-                else -> Player(id = UUID.randomUUID(), name = "Player $i")
-            }
-        }
-
-        val baseCount5 = TypeCountLookup().getBaseCounts(players.size)
-
-        val solver = RoleSolver(
-            players = players,
-            availableChars = characters,
-            baseCount = baseCount5,
-            surpriseChances = mapOf(marionette to 1f)
-        )
-
-        // 3. Solve
-        val assignments = solver.optimizeAssignments()
-
-        // 4. Verify results
-        assert(assignments.isNotEmpty())
-
-        val marionetteEntry = assignments.entries.find { it.value.first.id == "marionette" }
-        assertNotNull("Marionette should be assigned", marionetteEntry)
-        assertEquals("Marionette should think they are the balloonist", "balloonist", marionetteEntry?.value?.second?.id)
-
-        val outsiderEntry = assignments.entries.find { it.value.first.id == "outsider" }
-        assertNotNull("Outsider should be assigned", outsiderEntry)
-
-        assert(marionetteEntry?.key != outsiderEntry?.key) { "Marionette and Outsider should be assigned to different players" }
-    }
-
     @Test
     fun testRoleSolverHermitDrunk() = runBlocking {
         val drunk = Character(
@@ -2410,11 +2214,205 @@ class RoleSolverTest {
 
         // 6. Verify results
         assert(assignments.isNotEmpty())
-        printAssignments(assignments)
+
         assertEquals("Exactly 3 outsiders should be assigned", 3, assignedRoles.count { it.type == CharType.OUTSIDER })
         assert(assignedRoles.any { it.id == "balloonist" } || reservedRoles.any { it?.id == "balloonist" }) { "Balloonist should be assigned" }
         assert(assignedRoles.any { it.id == "marionette" }) { "Marionette should be assigned" }
         assert(assignedRoles.any { it.id == "fanggu" }) { "Fang Gu should be assigned" }
+    }
+
+    @Test
+    fun testRoleSolverMarionetteHuntsman() = runBlocking {
+        // 1. Create a list of 4 tf, 1 out, 1 min, 1 dem
+        val huntsman = Character(
+            id = "huntsman",
+            name = TextValue.Raw("Huntsman"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("..."),
+            dependsOn = "damsel"
+        )
+        val damsel = Character(
+            id = "damsel",
+            name = TextValue.Raw("Damsel"),
+            type = CharType.OUTSIDER,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val marionette = Character(
+            id = "marionette",
+            name = TextValue.Raw("Marionette"),
+            type = CharType.MINION,
+            icon = 0,
+            ability = TextValue.Raw("..."),
+            thinksTheyAre = listOf(CharType.TOWNSFOLK)
+        )
+        val demon = Character(
+            id = "demon",
+            name = TextValue.Raw("Demon"),
+            type = CharType.DEMON,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val t2 = Character(
+            id = "t2",
+            name = TextValue.Raw("Townsfolk 2"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val t3 = Character(
+            id = "t3",
+            name = TextValue.Raw("Townsfolk 3"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val t4 = Character(
+            id = "t4",
+            name = TextValue.Raw("Townsfolk 4"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+
+        val characters = listOf(huntsman, damsel, marionette, demon, t2, t3, t4)
+
+        // 2. Create a list of 6 players
+        val players = (1..6).map { i ->
+            when (i) {
+                1 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(huntsman))
+                2 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(demon))
+                3 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(huntsman))
+                4 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(t2))
+                5 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(t3))
+                else -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(t4))
+            }
+        }
+
+        val baseCount6 = TypeCountLookup().getBaseCounts(players.size) // 3, 1, 1, 1
+
+        val solver = RoleSolver(
+            players = players,
+            availableChars = characters,
+            baseCount = baseCount6,
+            surpriseChances = mapOf(marionette to 1f)
+        )
+
+        // 3. Solve
+        val assignments = solver.optimizeAssignments()
+
+        // 4. Verify results
+        assert(assignments.isNotEmpty())
+
+        val marionetteEntry = assignments.entries.find { it.value.first.id == "marionette" }
+        assertNotNull("Marionette should be assigned", marionetteEntry)
+        assertEquals("Marionette should think they are the huntsman", "huntsman", marionetteEntry?.value?.second?.id)
+
+        val damselEntry = assignments.entries.find { it.value.first.id == "damsel" }
+        assertNotNull("Damsel should be assigned", damselEntry)
+
+        assert(marionetteEntry?.key != damselEntry?.key) { "Marionette and Damsel should be assigned to different players" }
+    }
+
+    @Test
+    fun testRoleSolverMarionetteBalloonist() = runBlocking {
+        // 1. Create a list of 3 townsfolk, 2 outsiders, 1 minion, and 1 demon.
+        val balloonist = Character(
+            id = "balloonist",
+            name = TextValue.Raw("Balloonist"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("..."),
+            additiveModifiers = listOf(Count(), Count(townsfolk = -1, outsider = 1))
+        )
+        val t2 = Character(
+            id = "t2",
+            name = TextValue.Raw("Townsfolk 2"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val t3 = Character(
+            id = "t3",
+            name = TextValue.Raw("Townsfolk 3"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val t4 = Character(
+            id = "t4",
+            name = TextValue.Raw("Townsfolk 4"),
+            type = CharType.TOWNSFOLK,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val marionette = Character(
+            id = "marionette",
+            name = TextValue.Raw("Marionette"),
+            type = CharType.MINION,
+            icon = 0,
+            ability = TextValue.Raw("..."),
+            thinksTheyAre = listOf(CharType.TOWNSFOLK)
+        )
+        val o1 = Character(
+            id = "o1",
+            name = TextValue.Raw("Outsider 1"),
+            type = CharType.OUTSIDER,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val o2 = Character(
+            id = "o2",
+            name = TextValue.Raw("Outsider 2"),
+            type = CharType.OUTSIDER,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+        val demon = Character(
+            id = "demon",
+            name = TextValue.Raw("Demon"),
+            type = CharType.DEMON,
+            icon = 0,
+            ability = TextValue.Raw("...")
+        )
+
+        val characters = listOf(balloonist, t2, t3, t4, o1, o2, marionette, demon)
+
+        // 2. Create a list of 5 players.
+        val players = (1..5).map { i ->
+            when (i) {
+                1 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(balloonist, o1))
+                2 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(demon))
+                3 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(balloonist, o1))
+                4 -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(t2))
+                else -> Player(id = UUID.randomUUID(), name = "Player $i", selectedChars = listOf(t3))
+            }
+        }
+
+        val baseCount5 = TypeCountLookup().getBaseCounts(players.size)
+
+        val solver = RoleSolver(
+            players = players,
+            availableChars = characters,
+            baseCount = baseCount5,
+            surpriseChances = mapOf(marionette to 1f)
+        )
+
+        // 3. Solve
+        val assignments = solver.optimizeAssignments()
+
+        // 4. Verify results
+        assert(assignments.isNotEmpty())
+
+        val marionetteEntry = assignments.entries.find { it.value.first.id == "marionette" }
+        assertNotNull("Marionette should be assigned", marionetteEntry)
+        assertEquals("Marionette should think they are the balloonist", "balloonist", marionetteEntry?.value?.second?.id)
+
+        val outsiderEntry = assignments.entries.find { it.value.first.id == "o1" }
+        assertNotNull("Outsider should be assigned", outsiderEntry)
+
+        assert(marionetteEntry?.key != outsiderEntry?.key) { "Marionette and Outsider should be assigned to different players" }
     }
 
     fun printAssignments(assignments: Map<Player, Pair<Character, Character?>>) {
